@@ -70,25 +70,58 @@ object learn {
 		println(p)
 		var pp = People("scala")
 		println(pp)
+		val e = new Employee("James", "main")
+		println(e)
+		println(e.hello)
+		println(e.getInfo)
+		e.work("step1", "step6")
 	}
 }
 
-class Person(val id:Int, var name:String, var race:String="yellow") {
+// trait like Interface in java, but can be implement
+trait Human {
+	def printHome
+	def hello = "Human"
+}
+
+class Person(val id:Int, var name:String, var race:String="yellow") extends Human {
 	var age = 18
 	private val HOME = System.getProperty("user.home")
 	// name and age have getter and setter
 	// id has getter no setter
 	// HOME has no getter and setter
-	def this(name :String){
+
+	// auxiliary constructor
+	def this(name :String) {
+		//call the main constructor
 		this(Person.ID, name) // weird! I prefer this.ID
 	}
-	def printHome { println(s"This is my home $HOME") }
+	override def printHome { println(s"This is my home $HOME") }
 	printHome
 	override def toString = s"$name is #$id, $race race, and $age years old"
+	override def hello = "Person"
 }
 
 object Person{
 	val ID = 1
+}
+
+class Employee(name :String, var role :String) extends Person(name) {
+	override def toString = s"${super.toString}, role is $role"
+	override def hello = "Employee"
+
+	// return multi value tuples (tuple1 to tuple22)
+	// val (name, age, role) = getInfo
+	def getInfo() = (name, age, role)
+
+	// varargs 0 or more
+	// use list:_* pass a collection
+	def work(params :String*): this.type = {
+		params.foreach(println)
+		// method chaining
+		// return this.type
+		this
+	}
 }
 
 // default attributes is read only (val)
