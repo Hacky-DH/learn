@@ -4,6 +4,9 @@
  * Copyright (c) 2019 DHacky
  */
 
+//scala stdlib
+//https://www.scala-lang.org/api/current/scala/
+
 // see how the scala is compiling
 //1. scala -Xprint:parse learn.scala
 //2. scalac learn.scala && javap learn
@@ -75,6 +78,11 @@ object learn {
 		println(e.hello)
 		println(e.getInfo)
 		e.work("step1", "step6")
+
+		//class
+		println(classOf[Person])
+		println(classOf[String])
+		println(e.getClass)
 	}
 }
 
@@ -102,7 +110,9 @@ class Person(val id:Int, var name:String, var race:String="yellow") extends Huma
 	override def hello = "Person"
 }
 
-object Person{
+// companion object
+// like static members
+object Person {
 	val ID = 1
 }
 
@@ -117,6 +127,7 @@ class Employee(name :String, var role :String) extends Person(name) {
 	// varargs 0 or more
 	// use list:_* pass a collection
 	def work(params :String*): this.type = {
+		println(params.getClass)
 		params.foreach(println)
 		// method chaining
 		// return this.type
@@ -128,17 +139,16 @@ class Employee(name :String, var role :String) extends Person(name) {
 // default functions: toString unapply equals hashCode copy
 case class People(var name :String)
 
-object learn {
+// object learn is singleton
+object learn extends App {
 	//try Command Line Interface tools
 	//https://github.com/jstrachan/scopt
 	//https://github.com/backuity/clist
-	def main(args: Array[String]) = {
-		var cmd = if (args.length < 1) "null" else args(0)
-		cmd match {
-			case "str" => learn.str()
-			case "ctl" => learn.control()
-			case "cls" => learn.cls()
-			case opps => println(s"unsupport $opps, <str|ctl|cls>")
-		}
+	var cmd = if (args.length < 1) "null" else args(0)
+	cmd match {
+		case "str" => learn.str()
+		case "ctl" => learn.control()
+		case "cls" => learn.cls()
+		case opps => println(s"unsupport $opps, <str|ctl|cls>")
 	}
 }
