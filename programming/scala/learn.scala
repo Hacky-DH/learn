@@ -7,6 +7,15 @@
 //scala stdlib
 //https://www.scala-lang.org/api/current/scala/
 
+// scala school
+// https://twitter.github.io/scala_school/zh_cn/
+
+// Effective Scala
+// https://twitter.github.io/effectivescala/index-cn.html
+
+// use pure functions no side effect
+// EOP expression oriented programming
+
 // see how the scala is compiling
 //1. scala -Xprint:parse learn.scala
 //2. scalac learn.scala && javap learn
@@ -84,12 +93,30 @@ object learn {
 		println(classOf[String])
 		println(e.getClass)
 	}
+
+	def func() {
+		// Partial application or function binding
+		def adder(a:Int ,b :Int) = a + b
+		val add8 = adder(_, 8)
+		println(add8(7))
+		// curry
+		def multiply(m: Int)(n: Int): Int = m * n
+		println(multiply(8)(9))
+		val timesTwo = multiply(2)_
+		println(timesTwo(8))
+	}
 }
 
 // trait like Interface in java, but can be implement
 trait Human {
 	def printHome
 	def hello = "Human"
+}
+
+trait Cache[K, V] {
+  def get(key: K): V
+  def put(key: K, value: V)
+  def delete(key: K)
 }
 
 class Person(val id:Int, var name:String, var race:String="yellow") extends Human {
@@ -149,6 +176,7 @@ object learn extends App {
 		case "str" => learn.str()
 		case "ctl" => learn.control()
 		case "cls" => learn.cls()
+		case "func" => learn.func()
 		case opps => println(s"unsupport $opps, <str|ctl|cls>")
 	}
 }
