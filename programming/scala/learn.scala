@@ -104,6 +104,7 @@ object learn {
 		println(multiply(8)(9))
 		val timesTwo = multiply(2)_
 		println(timesTwo(8))
+		println(AddOne(7))
 	}
 }
 
@@ -165,6 +166,13 @@ class Employee(name :String, var role :String) extends Person(name) {
 // default attributes is read only (val)
 // default functions: toString unapply equals hashCode copy
 case class People(var name :String)
+
+// function is object
+// Function1[Int, Int]
+// Function1 ~ Function22
+object AddOne extends (Int => Int) {
+  def apply(m: Int): Int = m + 1
+}
 
 // object learn is singleton
 object learn extends App {
