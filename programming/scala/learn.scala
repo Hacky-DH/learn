@@ -77,19 +77,19 @@ object learn {
 	}
 
 	def cls() {
-		val p = new Person(1, "scala")
+		val p = new classTest.Person(1, "scala")
 		p.age = 15
 		println(p)
-		var pp = People("scala")
+		var pp = classTest.People("scala")
 		println(pp)
-		val e = new Employee("James", "main")
+		val e = new classTest.Employee("James", "main")
 		println(e)
 		println(e.hello)
 		println(e.getInfo)
 		e.work("step1", "step6")
 
 		//class
-		println(classOf[Person])
+		println(classOf[classTest.Person])
 		println(classOf[String])
 		println(e.getClass)
 	}
@@ -104,74 +104,104 @@ object learn {
 		println(multiply(8)(9))
 		val timesTwo = multiply(2)_
 		println(timesTwo(8))
-		println(AddOne(7))
+		println(funcTest.AddOne(7))
+
+		funcTest.optionTest()
 	}
 }
 
-// trait like Interface in java, but can be implement
-trait Human {
-	def printHome
-	def hello = "Human"
-}
-
-trait Cache[K, V] {
-  def get(key: K): V
-  def put(key: K, value: V)
-  def delete(key: K)
-}
-
-class Person(val id:Int, var name:String, var race:String="yellow") extends Human {
-	var age = 18
-	private val HOME = System.getProperty("user.home")
-	// name and age have getter and setter
-	// id has getter no setter
-	// HOME has no getter and setter
-
-	// auxiliary constructor
-	def this(name :String) {
-		//call the main constructor
-		this(Person.ID, name) // weird! I prefer this.ID
+object classTest {
+	// trait like Interface in java, but can be implement
+	trait Human {
+		def printHome
+		def hello = "Human"
 	}
-	override def printHome { println(s"This is my home $HOME") }
-	printHome
-	override def toString = s"$name is #$id, $race race, and $age years old"
-	override def hello = "Person"
-}
 
-// companion object
-// like static members
-object Person {
-	val ID = 1
-}
-
-class Employee(name :String, var role :String) extends Person(name) {
-	override def toString = s"${super.toString}, role is $role"
-	override def hello = "Employee"
-
-	// return multi value tuples (tuple1 to tuple22)
-	// val (name, age, role) = getInfo
-	def getInfo() = (name, age, role)
-
-	// varargs 0 or more
-	// use list:_* pass a collection
-	def work(params :String*): this.type = {
-		println(params.getClass)
-		params.foreach(println)
-		// method chaining
-		// return this.type
-		this
+	trait Cache[K, V] {
+	  def get(key: K): V
+	  def put(key: K, value: V)
+	  def delete(key: K)
 	}
+
+	class Person(val id:Int, var name:String, var race:String="yellow") extends Human {
+		var age = 18
+		private val HOME = System.getProperty("user.home")
+		// name and age have getter and setter
+		// id has getter no setter
+		// HOME has no getter and setter
+
+		// auxiliary constructor
+		def this(name :String) {
+			//call the main constructor
+			this(Person.ID, name) // weird! I prefer this.ID
+		}
+		override def printHome { println(s"This is my home $HOME") }
+		printHome
+		override def toString = s"$name is #$id, $race race, and $age years old"
+		override def hello = "Person"
+	}
+
+	// companion object
+	// like static members
+	object Person {
+		val ID = 1
+	}
+
+	class Employee(name :String, var role :String) extends Person(name) {
+		override def toString = s"${super.toString}, role is $role"
+		override def hello = "Employee"
+
+		// return multi value tuples (tuple1 to tuple22)
+		// val (name, age, role) = getInfo
+		def getInfo() = (name, age, role)
+
+		// varargs 0 or more
+		// use list:_* pass a collection
+		def work(params :String*): this.type = {
+			println(params.getClass)
+			params.foreach(println)
+			// method chaining
+			// return this.type
+			this
+		}
+	}
+
+	// default attributes is read only (val)
+	// default functions: toString unapply equals hashCode copy
+	case class People(var name :String)
 }
 
-// default attributes is read only (val)
-// default functions: toString unapply equals hashCode copy
-case class People(var name :String)
+object funcTest {
+	// function is object
+	// Function1[Int, Int]
+	// Function1 ~ Function22
+	object AddOne extends (Int => Int) {
+	  def apply(m: Int): Int = m + 1
+	}
 
-// function is object
-// Function1[Int, Int]
-// Function1 ~ Function22
-object AddOne extends (Int => Int) {
-  def apply(m: Int): Int = m + 1
+	import scala.util.{Try, Success, Failure}
+	def readText(file :String) :Try[List[String]] = {
+		Try(io.Source.fromFile(file).getLines.toList)
+	}
+
+	def toInt(s :String): Option[Int] = {
+		try {
+			Some(Integer.parseInt(s.trim))
+		} catch {
+			case e: Exception => None
+		}
+	}
+	def optionTest(){
+		readText("LICENSE") match {
+			case Success(lines) => lines.foreach(println)
+			case Failure(f) => println(f)
+		}
+		val bag = List("8", "6", "foo", "9", "bar", "5a")
+		println(bag.map(toInt))
+		// flatten or flatMap remove the None
+		println(bag.map(toInt).flatten)
+		println(bag.flatMap(toInt))
+	}
 }
 
 // object learn is singleton
