@@ -35,7 +35,7 @@ object learn {
 		var num = 886
 		println(s"${s} $num")
 		var retio = 0.8
-		println(f"${s} ${retio}%.2f")
+		println(f"${s} ${retio}%.2f") // hello scala 0.80
 
 		var pattern = "[0-9]+".r
 		println(pattern.findFirstIn(s)) //None, may return Option Some/None
@@ -44,10 +44,10 @@ object learn {
 			def add = s.map(c=>(c+1).toChar)
 			def toIntw(radix:Int) = Integer.parseInt(s, radix)
 		}
-		println(s.add) // real magic!!!
+		println(s.add) // real magic!!!  ifmmp!tdbmb
 		println("345".toInt)
-		println("f0f0".toIntw(16))
-		println("10101".toIntw(2))
+		println("f0f0".toIntw(16)) // 61680
+		println("10101".toIntw(2)) // 21
 	}
 
 	def control() {
@@ -67,6 +67,7 @@ object learn {
 			case a if 5 to 10 contains a => println(s"hehe $i")
 			case _ => println("unexpected")
 		}
+		//hehe 8
 
 		import util.control.Breaks._
 		breakable {
@@ -74,39 +75,6 @@ object learn {
 				if (i > 4) break
 			}
 		}
-	}
-
-	def cls() {
-		val p = new classTest.Person(1, "scala")
-		p.age = 15
-		println(p)
-		var pp = classTest.People("scala")
-		println(pp)
-		val e = new classTest.Employee("James", "main")
-		println(e)
-		println(e.hello)
-		println(e.getInfo)
-		e.work("step1", "step6")
-
-		//class
-		println(classOf[classTest.Person])
-		println(classOf[String])
-		println(e.getClass)
-	}
-
-	def func() {
-		// Partial application or function binding
-		def adder(a:Int ,b :Int) = a + b
-		val add8 = adder(_, 8)
-		println(add8(7))
-		// curry
-		def multiply(m: Int)(n: Int): Int = m * n
-		println(multiply(8)(9))
-		val timesTwo = multiply(2)_
-		println(timesTwo(8))
-		println(funcTest.AddOne(7))
-
-		funcTest.optionTest()
 	}
 }
 
@@ -169,6 +137,24 @@ object classTest {
 	// default attributes is read only (val)
 	// default functions: toString unapply equals hashCode copy
 	case class People(var name :String)
+
+	def cls() {
+		val p = new Person(1, "scala")
+		p.age = 15
+		println(p)
+		var pp = People("scala")
+		println(pp)
+		val e = new Employee("James", "main")
+		println(e)
+		println(e.hello)
+		println(e.getInfo)
+		e.work("step1", "step6")
+
+		//class
+		println(classOf[Person]) //class classTest$Person
+		println(classOf[String]) //class java.lang.String
+		println(e.getClass)//class classTest$Employee
+	}
 }
 
 object funcTest {
@@ -197,12 +183,45 @@ object funcTest {
 			case Failure(f) => println(f)
 		}
 		val bag = List("8", "6", "foo", "9", "bar", "5a")
-		println(bag.map(toInt))
+		println(bag.map(toInt)) // List(Some(8), Some(6), None, Some(9), None, None)
 		// flatten or flatMap remove the None
-		println(bag.map(toInt).flatten)
-		println(bag.flatMap(toInt))
+		println(bag.map(toInt).flatten) // List(8, 6, 9)
+		println(bag.flatMap(toInt)) // List(8, 6, 9)
+	}
+
+	def func() {
+		// Partial application or function binding
+		def adder(a:Int ,b :Int) = a + b
+		val add8 = adder(_, 8)
+		println(add8(7))
+		// curry
+		def multiply(m: Int)(n: Int): Int = m * n
+		println(multiply(8)(9))
+		val timesTwo = multiply(2)_
+		println(timesTwo(8))
+		println(AddOne(7))
+
+		optionTest()
 	}
 }
+
+object collectTest {
+	// scala collections
+	// Array var rw (index)
+	// List val ro
+	// Set no order
+	// Tuple based-1
+	val numbers = Array(1, 2, 3, 4)
+	val list = List(1, 2, 3)
+	val hostPort = ("localhost", 80)
+	def test() {
+		numbers(3) = 8
+		println(numbers(3)) //8
+		println(list(2)) // 3
+		println(hostPort._1) // localhost
+	}
+}
+
 
 // object learn is singleton
 object learn extends App {
@@ -213,8 +232,9 @@ object learn extends App {
 	cmd match {
 		case "str" => learn.str()
 		case "ctl" => learn.control()
-		case "cls" => learn.cls()
-		case "func" => learn.func()
-		case opps => println(s"unsupport $opps, <str|ctl|cls>")
+		case "cls" => classTest.cls()
+		case "func" => funcTest.func()
+		case "col" => collectTest.test()
+		case opps => println(s"unsupport $opps, <str|ctl|cls|func|col>")
 	}
 }
