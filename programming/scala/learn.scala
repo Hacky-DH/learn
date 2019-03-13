@@ -211,14 +211,35 @@ object collectTest {
 	// List val ro
 	// Set no order
 	// Tuple based-1
+	// Map Map(1 -> 2) Map.get return Option
+	// Option isDefined get getOrElse
 	val numbers = Array(1, 2, 3, 4)
 	val list = List(1, 2, 3)
 	val hostPort = ("localhost", 80)
+
+	// Functional Combinators
+	// map foreach filter zip partition find drop dropWhile
+	// foldLeft foldRight flatten flatMap
 	def test() {
 		numbers(3) = 8
 		println(numbers(3)) //8
 		println(list(2)) // 3
 		println(hostPort._1) // localhost
+
+		numbers
+			.filter((i: Int) => i % 2 == 0)
+			.map((i: Int) => i * 2)
+			.foreach(println)
+
+		numbers.partition(_ % 2 == 0)
+		numbers.dropWhile(_ % 2 != 0)
+		println(numbers.foldLeft(0)((m: Int, n: Int) => m + n)) //14
+
+		val nestedNumbers = List(List(1, 2), List(3, 4))
+		nestedNumbers.flatMap(x => x.map(_ * 2)).foreach(println)
+
+		val extensions = Map("steve" -> 100, "bob" -> 101, "joe" -> 201)
+		extensions.filter({case (name, extension) => extension < 200})
 	}
 }
 
