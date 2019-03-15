@@ -138,6 +138,16 @@ object classTest {
 	// default functions: toString unapply equals hashCode copy
 	case class People(var name :String)
 
+	// generic type
+	trait Pair[A, B] {
+		def getKey: A
+		def getValue: B
+	}
+
+	def randomElement[A](seq :Seq[A]) = {
+		seq(util.Random.nextInt(seq.length))
+	}
+
 	def cls() {
 		val p = new Person(1, "scala")
 		p.age = 15
@@ -154,6 +164,9 @@ object classTest {
 		println(classOf[Person]) //class classTest$Person
 		println(classOf[String]) //class java.lang.String
 		println(e.getClass)//class classTest$Employee
+
+		println(randomElement(Seq("scala","java","python")))
+		println(randomElement(List(5,8,7)))
 	}
 }
 
