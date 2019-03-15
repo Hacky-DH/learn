@@ -202,6 +202,14 @@ object funcTest {
 		println(bag.flatMap(toInt)) // List(8, 6, 9)
 	}
 
+	// call by name
+	def timer[A](blockofCode: => A) = {
+		val start = System.nanoTime
+		val result = blockofCode
+		val end = System.nanoTime
+		(result, (end-start)/1000d)
+	}
+
 	def func() {
 		// Partial application or function binding
 		def adder(a:Int ,b :Int) = a + b
@@ -215,6 +223,9 @@ object funcTest {
 		println(AddOne(7))
 
 		optionTest()
+
+		// timer
+		println(timer(multiply(1987)(98723)))
 	}
 }
 
