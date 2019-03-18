@@ -234,14 +234,46 @@ object funcTest {
 object collectTest {
 	// scala collections
 	// Array var rw (index)
-	// List val ro
-	// Set no order
-	// Tuple based-1
-	// Map Map(1 -> 2) Map.get return Option
-	// Option isDefined get getOrElse
 	val numbers = Array(1, 2, 3, 4)
-	val list = List(1, 2, 3)
+	// ArrayBuffer
+	import collection.mutable.ArrayBuffer
+	var ab = new ArrayBuffer[String]()
+	ab += ("name", "scala")
+
+	// List val ro
+	val list1 = 2::4::5::8::Nil
+	val list = 9::list1
+	val list2 = List(2,4,5,8)
+	val list3 = List[Number](2,4.5,5,86D)
+	val list4 = List.range(2,78)
+	// ListBuffer rw
+	import collection.mutable.ListBuffer
+	var lb = new ListBuffer[String]()
+	lb += "apple"
+	lb += ("banana", "pineapple")
+	lb ++= Seq("strawberry", "bear")
+	lb -= "pineapple"
+	// stream, lazy list
+	val stream = 2#::4#::5#::8#::Stream.empty
+	val stream1 = (1 to 10000).toStream
+
+
+	// Set no order
+	// collection.immutable.Set is default
+	// collection.mutable.Set
+	// collection.SortedSet
+
+	// Tuple based-1
 	val hostPort = ("localhost", 80)
+
+	// Map Map(1 -> 2) Map.get return Option
+	// collection.immutable.Map is default
+	// collection.mutable.Map
+
+	// collection.mutable.Queue
+	// collection.mutable.Stack
+
+	// Option isDefined get getOrElse
 
 	// Functional Combinators
 	// map foreach filter zip partition find drop dropWhile
@@ -249,8 +281,11 @@ object collectTest {
 	def test() {
 		numbers(3) = 8
 		println(numbers(3)) //8
-		println(list(2)) // 3
+		println(list(2)) // 5
 		println(hostPort._1) // localhost
+		util.Sorting.quickSort(numbers)
+		println(lb)
+		println(stream1.filter(_<50).sum)
 
 		numbers
 			.filter((i: Int) => i % 2 == 0)
