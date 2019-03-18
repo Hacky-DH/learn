@@ -76,6 +76,8 @@ object learn {
 			}
 		}
 	}
+
+	def isWindows() = System.getProperty("os.name").toLowerCase().contains("win")
 }
 
 object classTest {
@@ -264,6 +266,14 @@ object collectTest {
 
 		val extensions = Map("steve" -> 100, "bob" -> 101, "joe" -> 201)
 		extensions.filter({case (name, extension) => extension < 200})
+
+		// process
+		import sys.process._
+		val cmd = if(learn.isWindows) "cmd /C dir /b" else "ls"
+		println(cmd.!)  // return code
+		println(cmd.!!) // return stdout
+		// other cmd
+		// #|, ###(;), #>, #<, #>>, #||, #&&
 	}
 }
 
