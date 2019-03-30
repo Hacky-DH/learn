@@ -1,0 +1,1 @@
+double newton(double, int);
