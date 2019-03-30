@@ -6,5 +6,12 @@ tags
 build
 target
 *.class
+*.so
+*.exe
+*.lib
+*.obj
+__pycache__
+*.pyc
+*.pyd
 
 .ipynb_checkpoints
