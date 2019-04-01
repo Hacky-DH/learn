@@ -2,6 +2,7 @@
 
 from tornado.web import Application, RequestHandler, URLSpec
 from tornado.ioloop import IOLoop
+import json
 
 
 class MainHandler(RequestHandler):
@@ -11,6 +12,10 @@ class MainHandler(RequestHandler):
         <a href="{}">book2</a>
         '''.format(self.reverse_url("book", "0"),
                    self.reverse_url("book", "1")))
+
+    def post(self):
+        arg = json.loads(self.request.body)
+        self.write("Receive " + arg.get('message'))
 
 
 class BookHandler(RequestHandler):
