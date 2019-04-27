@@ -1,0 +1,3 @@
+[submodule "ML/dataset/Titanic_Data"]
+	path = ML/dataset/Titanic_Data
+	url = https://github.com/cystanford/Titanic_Data.git
