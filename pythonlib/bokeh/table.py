@@ -14,7 +14,10 @@ dates = pd.date_range(start='20190501', end='20190524')
 value = [randint(1, 1000) for x in range(24)]
 src = ColumnDataSource(data=dict(dates=dates, value=value))
 value_fmt = HTMLTemplateFormatter(template="""
-<a href="https:/www.example.com/<%= dates %>+<%= value %>" target="_blank"><%= value %></a>
+<a href="https:/www.example.com/<%
+var dt = new Date(dates);
+print(dt.toLocaleDateString(), value);
+%>" target="_blank"><%= value %></a>
 """)
 columns = [
     TableColumn(field="dates", title="Date", formatter=DateFormatter()),
