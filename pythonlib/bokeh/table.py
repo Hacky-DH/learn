@@ -27,7 +27,8 @@ columns = [
 ]
 table = DataTable(source=src, columns=columns, selectable=False,
                   index_position=None, width=400, height=300)
-title = Div(text="""<h1>Demo Table Title</h1>""",
-            style={'text-align': 'center', 'width': '400px'}, )
+title = Div(text="""<h1>Demo Table Title</h1>""")
+title.align = 'center'
+title.sizing_mode = 'scale_width'
 output_file('table.html')
 show(column(title, table))
