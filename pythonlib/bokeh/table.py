@@ -7,6 +7,8 @@ from bokeh.models import (
     CustomJS,
 )
 from bokeh.io import output_file, show
+from bokeh.models.widgets.markups import Div
+from bokeh.layouts import column
 import pandas as pd
 from random import randint
 
@@ -25,5 +27,7 @@ columns = [
 ]
 table = DataTable(source=src, columns=columns, selectable=False,
                   index_position=None, width=400, height=300)
+title = Div(text="""<h1>Demo Table Title</h1>""",
+            style={'text-align': 'center', 'width': '400px'}, )
 output_file('table.html')
-show(table)
+show(column(title, table))
