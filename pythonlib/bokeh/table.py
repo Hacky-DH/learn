@@ -26,7 +26,8 @@ columns = [
     TableColumn(field="value", title="Value", formatter=value_fmt),
 ]
 table = DataTable(source=src, columns=columns, selectable=False,
-                  index_position=None, width=400, height=300)
+                  index_position=None)
+table.sizing_mode = 'scale_both'
 title = Div(text="""<h1>Demo Table Title</h1>""")
 title.align = 'center'
 title.sizing_mode = 'scale_width'
