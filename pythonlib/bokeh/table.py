@@ -19,7 +19,9 @@ value_fmt = HTMLTemplateFormatter(template="""
 <a href="https:/www.example.com/<%
 var dt = new Date(dates);
 print(dt.toLocaleDateString(), value);
-%>" target="_blank"><%= value %></a>
+%>" target="_blank" style="background:<%
+if(value>800) print('red')
+%>;"><%= value %></a>
 """)
 columns = [
     TableColumn(field="dates", title="Date", formatter=DateFormatter()),
