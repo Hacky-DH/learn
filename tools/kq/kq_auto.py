@@ -46,6 +46,12 @@ def run(h, m=None):
     s.run()
     print(tm, 'done')
 
+def start(url):
+    #start google chrome
+    chrome_dir = r'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe'
+    chrome = Application(backend='uia')
+    chrome.start(chrome_dir + ' --force-renderer-accessibility --incognito --start-maximized ' + url)
+
 #print(get_mouse_point())
 
 run(9, (20,30))
