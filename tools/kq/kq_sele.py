@@ -55,7 +55,12 @@ def run(h, m=None):
         print('next will at', tm)
         s.enterabs(datetime.timestamp(dt), 0, _run)
         s.run()
+        return True
+    return False
+
 
 while True:
-    run(9, (10, 20))
-    run(21, (30, 40))
+    r1 = run(9, (10, 20))
+    r2 = run(21, (30, 40))
+    if not r1 and not r2:
+        random_delay(10*60, 15*60)
