@@ -3,6 +3,7 @@ import random
 import time
 import sched
 import yaml
+import logging
 from datetime import datetime
 from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.common.keys import Keys
@@ -54,14 +55,14 @@ def run(url, username, password, h, m=None):
 
     def _run():
         res = kq(url, username, password)
-        print(tm, res)
+        logging.info('run at {} {}'.format(tm, res))
 
     if dt > now and now.weekday() != 6:
-        print('next will at', tm)
+        logging.info('next run will at {}'.format(tm))
         s.enterabs(datetime.timestamp(dt), 0, _run)
         s.run()
         return True
-    print('NOT run at past time', tm)
+    logging.warning('NOT run at past time {}'.format(tm))
     return False
 
 
@@ -71,22 +72,24 @@ def parse_config(file_name='config.yaml'):
 
 
 def main():
+    logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
+                        level=logging.INFO)
     options = parse_config()
     if options.get('one_shot'):
         if options.get('run_time') == 'now':
-            print('run now')
+            logging.info('run now')
             kq(options.get('url'),
                options.get('username'),
                options.get('password'))
         else:
-            print('run one shot')
+            logging.info('run one shot')
             run(options.get('url'),
                 options.get('username'),
                 options.get('password'),
                 options.get('hour1'),
                 options.get('minute1'))
     else:
-        print('run forever')
+        logging.info('run forever')
         while True:
             r1 = run(options.get('url'),
                      options.get('username'),
@@ -99,7 +102,7 @@ def main():
                      options.get('hour2'),
                      options.get('minute2'))
             if not r1 and not r2:
-                print('no plan to run, delay...')
+                logging.info('no plan to run, delay...')
                 random_delay(options.get('delay_m')[0] * 60,
                              options.get('delay_m')[1] * 60)
 
