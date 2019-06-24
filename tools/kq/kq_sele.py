@@ -37,6 +37,8 @@ def kq(url, username, password):
         return 'done'
     except:
         return 'failed'
+    finally:
+        driver.quit()
 
 def run(h, m=None):
     s = sched.scheduler(time.time, time.sleep)
