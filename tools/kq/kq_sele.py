@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-import sys
 import random
 import time
 import sched
+import yaml
 from datetime import datetime
 from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.common.keys import Keys
@@ -40,29 +40,69 @@ def kq(url, username, password):
     finally:
         driver.quit()
 
-def run(h, m=None):
+
+def run(url, username, password, h, m=None):
     s = sched.scheduler(time.time, time.sleep)
     if m is None:
         m = random.randint(10, 59)
-    if isinstance(m, tuple):
+    if isinstance(m, tuple) or isinstance(m, list):
         m = random.randint(m[0], m[1])
     sec = random.randint(10, 59)
     now = datetime.now()
     dt = now.replace(hour=h, minute=m, second=sec)
     tm = dt.strftime('%Y-%m-%d %H:%M:%S')
+
     def _run():
-        res = kq('', '', '')
+        res = kq(url, username, password)
         print(tm, res)
+
     if dt > now and now.weekday() != 6:
         print('next will at', tm)
         s.enterabs(datetime.timestamp(dt), 0, _run)
         s.run()
         return True
+    print('NOT run at past time', tm)
     return False
 
 
-while True:
-    r1 = run(9, (10, 20))
-    r2 = run(21, (30, 40))
-    if not r1 and not r2:
-        random_delay(10*60, 15*60)
+def parse_config(file_name='config.yaml'):
+    with open(file_name, 'r') as f:
+        return yaml.load(f)
+
+
+def main():
+    options = parse_config()
+    if options.get('one_shot'):
+        if options.get('run_time') == 'now':
+            print('run now')
+            kq(options.get('url'),
+               options.get('username'),
+               options.get('password'))
+        else:
+            print('run one shot')
+            run(options.get('url'),
+                options.get('username'),
+                options.get('password'),
+                options.get('hour1'),
+                options.get('minute1'))
+    else:
+        print('run forever')
+        while True:
+            r1 = run(options.get('url'),
+                     options.get('username'),
+                     options.get('password'),
+                     options.get('hour1'),
+                     options.get('minute1'))
+            r2 = run(options.get('url'),
+                     options.get('username'),
+                     options.get('password'),
+                     options.get('hour2'),
+                     options.get('minute2'))
+            if not r1 and not r2:
+                print('no plan to run, delay...')
+                random_delay(options.get('delay_m')[0] * 60,
+                             options.get('delay_m')[1] * 60)
+
+
+if __name__ == '__main__':
+    main()
