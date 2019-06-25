@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import sys
 import random
 import time
 import sched
@@ -13,14 +14,24 @@ def random_delay(a=5, b=10):
     time.sleep(int(random.uniform(a, b)))
 
 
-def kq(url, username, password):
+def kq(**kwargs):
+    """
+    :param kwargs:
+        url
+        username
+        password
+    :return:
+    """
     option = ChromeOptions()
     option.add_experimental_option('excludeSwitches', ['enable-automation'])
     # need download chromedriver
     driver = Chrome('chromedriver.exe', options=option)
-    driver.get(url)
-    random_delay()
     try:
+        url = kwargs.pop('url')
+        username = kwargs.pop('username')
+        password = kwargs.pop('password')
+        driver.get(url)
+        random_delay()
         user = driver.find_element_by_id('username')
         user.clear()
         user.send_keys(username)
@@ -42,19 +53,28 @@ def kq(url, username, password):
         driver.quit()
 
 
-def run(url, username, password, h, m=None):
+def run(hour, minute=None, **kwargs):
+    """
+    :param hour
+    :param minute: int or list or tuple
+    :param kwargs:
+        url
+        username
+        password
+    :return:
+    """
     s = sched.scheduler(time.time, time.sleep)
-    if m is None:
-        m = random.randint(10, 59)
-    if isinstance(m, tuple) or isinstance(m, list):
-        m = random.randint(m[0], m[1])
+    if minute is None:
+        minute = random.randint(10, 59)
+    if isinstance(minute, tuple) or isinstance(minute, list):
+        minute = random.randint(minute[0], minute[1])
     sec = random.randint(10, 59)
     now = datetime.now()
-    dt = now.replace(hour=h, minute=m, second=sec)
+    dt = now.replace(hour=hour, minute=minute, second=sec)
     tm = dt.strftime('%Y-%m-%d %H:%M:%S')
 
     def _run():
-        res = kq(url, username, password)
+        res = kq(**kwargs)
         logging.info('run at {} {}'.format(tm, res))
 
     if dt > now and now.weekday() != 6:
@@ -66,41 +86,27 @@ def run(url, username, password, h, m=None):
     return False
 
 
-def parse_config(file_name='config.yaml'):
-    with open(file_name, 'r') as f:
+def parse_config(config_file):
+    with open(config_file, 'r') as f:
         return yaml.load(f)
 
 
-def main():
+def main(config_file):
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
                         level=logging.INFO)
-    options = parse_config()
+    options = parse_config(config_file)
     if options.get('one_shot'):
         if options.get('run_time') == 'now':
             logging.info('run now')
-            kq(options.get('url'),
-               options.get('username'),
-               options.get('password'))
+            kq(**options)
         else:
             logging.info('run one shot')
-            run(options.get('url'),
-                options.get('username'),
-                options.get('password'),
-                options.get('hour1'),
-                options.get('minute1'))
+            run(options.get('hour1'), options.get('minute1'), **options)
     else:
         logging.info('run forever')
         while True:
-            r1 = run(options.get('url'),
-                     options.get('username'),
-                     options.get('password'),
-                     options.get('hour1'),
-                     options.get('minute1'))
-            r2 = run(options.get('url'),
-                     options.get('username'),
-                     options.get('password'),
-                     options.get('hour2'),
-                     options.get('minute2'))
+            r1 = run(options.get('hour1'), options.get('minute1'), **options)
+            r2 = run(options.get('hour2'), options.get('minute2'), **options)
             if not r1 and not r2:
                 logging.info('no plan to run, delay...')
                 random_delay(options.get('delay_m')[0] * 60,
@@ -108,4 +114,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    config = sys.argv[1] if len(sys.argv) > 1 else 'config.yaml'
+    main(config)
