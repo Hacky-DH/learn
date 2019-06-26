@@ -24,7 +24,8 @@ def kq(**kwargs):
     """
     option = ChromeOptions()
     option.add_experimental_option('excludeSwitches', ['enable-automation'])
-    # need download chromedriver
+    # need download chromedriver and put to PATH
+    # http://chromedriver.chromium.org/downloads
     driver = Chrome('chromedriver.exe', options=option)
     try:
         url = kwargs.pop('url')
@@ -53,22 +54,23 @@ def kq(**kwargs):
         driver.quit()
 
 
-def run(hour, minute=None, **kwargs):
+def run(**kwargs):
     """
-    :param hour
-    :param minute: int or list or tuple
     :param kwargs:
         url
         username
         password
+        hour
+        minute
+        jitter_minute
+        exclude_weekdays
     :return:
     """
-    s = sched.scheduler(time.time, time.sleep)
-    if minute is None:
-        minute = random.randint(10, 59)
-    if isinstance(minute, tuple) or isinstance(minute, list):
-        minute = random.randint(minute[0], minute[1])
-    sec = random.randint(10, 59)
+    hour = kwargs.pop('hour')
+    minute = kwargs.get('minute', random.randint(0, 59))
+    jitter_minute = kwargs.get('jitter_minute', 10)
+    minute += random.randint(-jitter_minute, jitter_minute)
+    sec = random.randint(0, 59)
     now = datetime.now()
     dt = now.replace(hour=hour, minute=minute, second=sec)
     tm = dt.strftime('%Y-%m-%d %H:%M:%S')
@@ -77,12 +79,14 @@ def run(hour, minute=None, **kwargs):
         res = kq(**kwargs)
         logging.info('run at {} {}'.format(tm, res))
 
-    if dt > now and now.weekday() != 6:
+    exclude_weekdays = kwargs.pop('exclude_weekdays', [5, 6])
+    if dt > now and now.weekday() not in exclude_weekdays:
         logging.info('next run will at {}'.format(tm))
+        s = sched.scheduler(time.time, time.sleep)
         s.enterabs(datetime.timestamp(dt), 0, _run)
         s.run()
         return True
-    logging.warning('NOT run at past time {}'.format(tm))
+    logging.warning('NOT run at time {}'.format(tm))
     return False
 
 
@@ -95,22 +99,25 @@ def main(config_file):
     logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
                         level=logging.INFO)
     options = parse_config(config_file)
-    if options.get('one_shot'):
-        if options.get('run_time') == 'now':
+    if options.get('one_shot', True):
+        if options.get('run_time', 'now') == 'now':
             logging.info('run now')
             kq(**options)
         else:
             logging.info('run one shot')
-            run(options.get('hour1'), options.get('minute1'), **options)
+            options.update(options.get('start', {}))
+            run(**options)
     else:
         logging.info('run forever')
         while True:
-            r1 = run(options.get('hour1'), options.get('minute1'), **options)
-            r2 = run(options.get('hour2'), options.get('minute2'), **options)
+            options.update(options.get('start', {}))
+            r1 = run(**options)
+            options.update(options.get('end', {}))
+            r2 = run(**options)
             if not r1 and not r2:
                 logging.info('no plan to run, delay...')
-                random_delay(options.get('delay_m')[0] * 60,
-                             options.get('delay_m')[1] * 60)
+                delay = options.get('delay_minute', 45) * 60
+                time.sleep(delay)
 
 
 if __name__ == '__main__':

@@ -3,14 +3,14 @@ username: demo
 password: demo
 one_shot: false
 run_time: now
-hour1: 9
-minute1:
-  - 10
-  - 20
-hour2: 21
-minute2:
-  - 30
-  - 40
-delay_m:
-  - 10
-  - 15
+jitter_minute: 10
+start:
+  hour: 9
+  minute: 15
+end:
+  hour: 21
+  minute: 45
+delay_minute: 45
+exclude_weekdays:
+  - 5
+  - 6
