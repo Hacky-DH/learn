@@ -1,15 +1,30 @@
+// rapidjson doc http://rapidjson.org/zh-cn/index.html
 #include <iostream>
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <fstream>
 #include <rapidjson/document.h>
+#include <rapidjson/pointer.h>
+#include <rapidjson/writer.h>
+#include <rapidjson/istreamwrapper.h>
+#include <rapidjson/error/en.h>
 
+namespace serialize {
 using std::vector;
 using std::map;
 using std::string;
+using std::ifstream;
+using std::cerr;
+using std::cout;
+using std::endl;
 using rapidjson::Document;
 using rapidjson::Value;
+using rapidjson::Pointer;
+using rapidjson::IStreamWrapper;
+using rapidjson::GetParseError_En;
 
+// json demo from https://github.com/alibaba/euler/wiki/Preparing-Data
 
 class Edge {
 	long src_id;
@@ -19,19 +34,16 @@ class Edge {
 	map<int, vector<long>> uint64_feature;
 	map<int, vector<float>> float_feature;
 	map<int, string> binary_feature;
+protected:
+	template <typename Writer>
+    void serialize(Writer& writer) const {
+    }
+    void deserialize(Document& doc) {
+    }
 };
 
 
 class Block {
-public:
-    Block(){}
-    ~Block(){}
-
-protected:
-    template <typename Writer>
-    void Serialize(Writer& writer) const {
-    }
-
 private:
 	long node_id;
 	int node_type;
@@ -41,7 +53,26 @@ private:
 	map<int, vector<float>> float_feature;
 	map<int, string> binary_feature;
 	vector<Edge> edge;
+protected:
+	template <typename Writer>
+    void serialize(Writer& writer) const {
+    }
+    void deserialize(Document& doc) {
+    }
 };
+
+int test(const string& file_name) {
+	ifstream stream(file_name);
+	IStreamWrapper wrap(stream);
+	Document doc;
+	if(doc.ParseStream(wrap).HasParseError()) {
+		cerr<<"parse error: "<<GetParseError_En(doc.GetParseError())<<endl;
+		return 1;
+	}
+    assert(doc.IsObject());
+    stream.close();
+    return 0;
+}
 
 
 void lambda() {
@@ -50,19 +81,11 @@ void lambda() {
 		[](const auto& i){std::cout<<i<<" ";});
 }
 
+} // end of namespace
+
 
 int main() {
-	const char json[] = " { \"hello\" : \"world\", \"t\" : true , \"f\" : false, \"n\": null, \"i\":123, \"pi\": 3.1416, \"a\":[1, 2, 3, 4] } ";
-
-    Document document;
-    if (document.Parse(json).HasParseError())
-        return 1;
-    assert(document.IsObject());
-    assert(document.HasMember("hello"));
-    assert(document["hello"].IsString());
-    printf("hello = %s\n", document["hello"].GetString());
-    const Value& v = document["t"];
-    assert(v.IsBool());
+	return serialize::test("data.json");
 }
 
 //serialize/deserialize
