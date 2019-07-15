@@ -1,7 +1,7 @@
 """
 https://github.com/apple/turicreate
 run on IOS, Linux, WSL
-from https://www.jianshu.com/p/49f8dc5f2f47
+from https://apple.github.io/turicreate/docs/userguide/image_classifier/
 """
 import turicreate as tc
 

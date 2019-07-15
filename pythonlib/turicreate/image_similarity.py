@@ -1,7 +1,7 @@
 """
 https://github.com/apple/turicreate
 run on IOS, Linux, WSL
-from https://www.jianshu.com/p/6fe5c75a8aa5
+https://apple.github.io/turicreate/docs/userguide/image_similarity/
 """
 import turicreate as tc
 
