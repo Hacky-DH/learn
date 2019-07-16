@@ -8,10 +8,12 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <functional>
 #include <rapidjson/document.h>
 #include <rapidjson/pointer.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/istreamwrapper.h>
+#include <rapidjson/ostreamwrapper.h>
 #include <rapidjson/error/en.h>
 
 namespace serialize {
@@ -19,36 +21,88 @@ using std::vector;
 using std::map;
 using std::string;
 using std::ifstream;
+using std::ofstream;
 using std::stringstream;
 using std::cerr;
 using std::cout;
 using std::endl;
+using std::to_string;
 using rapidjson::Document;
 using rapidjson::Value;
 using rapidjson::Pointer;
 using rapidjson::IStreamWrapper;
+using rapidjson::OStreamWrapper;
+using rapidjson::Writer;
 using rapidjson::GetParseError_En;
+using rapidjson::kObjectType;
+using rapidjson::kArrayType;
+using rapidjson::kStringType;
 
 // json demo from https://github.com/alibaba/euler/wiki/Preparing-Data
 
 class Edge {
-	int64_t src_id;
-	int64_t dst_id;
-	int edge_type;
-	double weight;
+	int64_t src_id = 0;
+	int64_t dst_id = 0;
+	int edge_type = 0;
+	double weight = 0;
 	map<int, vector<int64_t>> uint64_feature;
 	map<int, vector<double>> float_feature;
 	map<int, string> binary_feature;
 public:
 	template <typename Writer>
-	void serialize(Writer& writer) const {
+	void serialize(Writer& writer, int index=0) const {
+		Document doc;
+		stringstream ss;
+		ss<<"/edge/"<<index;
+		auto& root = Pointer(ss.str().c_str()).Create(doc).SetObject();
+		root.AddMember("src_id", src_id, doc.GetAllocator());
+		root.AddMember("dst_id", dst_id, doc.GetAllocator());
+		root.AddMember("edge_type", edge_type, doc.GetAllocator());
+		root.AddMember("weight", weight, doc.GetAllocator());
+		{
+			Value obj(kObjectType);
+			Value name(kStringType);
+			for (auto const& [id, val] : uint64_feature) {
+				Value arr(kArrayType);
+				for (auto const& b : val) {
+					arr.PushBack(b, doc.GetAllocator());
+				}
+				name.SetString(to_string(id).c_str(), doc.GetAllocator());
+				obj.AddMember(name.Move(), arr.Move(), doc.GetAllocator());
+			}
+			root.AddMember("uint64_feature", obj, doc.GetAllocator());
+		}
+		{
+			Value obj(kObjectType);
+			Value name(kStringType);
+			for (auto const& [id, val] : float_feature) {
+				Value arr(kArrayType);
+				for (auto const& b : val) {
+					arr.PushBack(b, doc.GetAllocator());
+				}
+				name.SetString(to_string(id).c_str(), doc.GetAllocator());
+				obj.AddMember(name.Move(), arr.Move(), doc.GetAllocator());
+			}
+			root.AddMember("float_feature", obj, doc.GetAllocator());
+		}
+		{
+			Value obj(kObjectType);
+			Value name(kStringType);
+			for (auto const& [id, val] : binary_feature) {
+				Value value(kStringType);
+				name.SetString(to_string(id).c_str(), doc.GetAllocator());
+				value.SetString(val.c_str(), doc.GetAllocator());
+				obj.AddMember(name.Move(), value.Move(), doc.GetAllocator());
+			}
+			root.AddMember("binary_feature", obj, doc.GetAllocator());
+		}
+		doc.Accept(writer);
 	}
 
 	void deserialize(Document& doc, int index=0) {
 		stringstream ss;
 		ss<<"/edge/"<<index;
-		Pointer pointer = Pointer(ss.str().c_str());
-		Value* v = pointer.Get(doc);
+		Value* v = Pointer(ss.str().c_str()).Get(doc);
 		assert(v);
 		auto ed = v->GetObject();
 		src_id = ed["src_id"].GetInt64();
@@ -112,9 +166,9 @@ public:
 class Block {
 	typedef map<int64_t, double> NeighborId;
 private:
-	int64_t node_id;
-	int node_type;
-	double node_weight;
+	int64_t node_id = 0;
+	int node_type = 0;
+	double node_weight = 0;
 	map<int, NeighborId> neighbor;
 	map<int, vector<int64_t>> uint64_feature;
 	map<int, vector<double>> float_feature;
@@ -226,11 +280,20 @@ public:
 		ss<<endl;
 		return ss.str();
 	}
+
+	vector<Edge>& get_edges() {
+		return edge;
+	}
+
+	Block& add_edge(const Edge& e) {
+		edge.push_back(e);
+		return *this;
+	}
 };
 
 
-int test(const string& file_name) {
-	ifstream stream(file_name);
+int test(const string& input, const string& output) {
+	ifstream stream(input);
 	IStreamWrapper wrap(stream);
 	Document doc;
 	if(doc.ParseStream(wrap).HasParseError()) {
@@ -241,13 +304,21 @@ int test(const string& file_name) {
 	Block block;
 	block.deserialize(doc);
 	cout<<block.str()<<endl;
-	//Edge e;
-	//e.deserialize(doc);
-	//cout<<e.str()<<endl;
 	stream.close();
+	// dump
+	if(!output.empty()) {
+		ofstream of(output);
+		OStreamWrapper osw(of);
+		Writer<OStreamWrapper> writer(osw);
+		Edge& e = block.get_edges()[0];
+		e.serialize(writer);
+		of.close();
+	}
 	return 0;
 }
 
+int dump(const string& file_name) {
+}
 
 void lambda() {
 	std::vector<int> v={1,4,8};
@@ -259,5 +330,5 @@ void lambda() {
 
 
 int main() {
-	return serialize::test("data.json");
+	return serialize::test("data.json", "output.json");
 }
