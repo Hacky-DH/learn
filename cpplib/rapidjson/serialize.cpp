@@ -49,9 +49,8 @@ class Edge {
 	map<int, vector<double>> float_feature;
 	map<int, string> binary_feature;
 public:
-	template <typename Writer>
-	void serialize(Writer& writer, int index=0) const {
-		Document doc;
+	template <typename V>
+	void serialize(V& doc, int index=0) const {
 		stringstream ss;
 		ss<<"/edge/"<<index;
 		auto& root = Pointer(ss.str().c_str()).Create(doc).SetObject();
@@ -59,9 +58,9 @@ public:
 		root.AddMember("dst_id", dst_id, doc.GetAllocator());
 		root.AddMember("edge_type", edge_type, doc.GetAllocator());
 		root.AddMember("weight", weight, doc.GetAllocator());
+		Value name(kStringType);
 		{
 			Value obj(kObjectType);
-			Value name(kStringType);
 			for (auto const& [id, val] : uint64_feature) {
 				Value arr(kArrayType);
 				for (auto const& b : val) {
@@ -74,7 +73,6 @@ public:
 		}
 		{
 			Value obj(kObjectType);
-			Value name(kStringType);
 			for (auto const& [id, val] : float_feature) {
 				Value arr(kArrayType);
 				for (auto const& b : val) {
@@ -87,16 +85,14 @@ public:
 		}
 		{
 			Value obj(kObjectType);
-			Value name(kStringType);
+			Value value(kStringType);
 			for (auto const& [id, val] : binary_feature) {
-				Value value(kStringType);
 				name.SetString(to_string(id).c_str(), doc.GetAllocator());
 				value.SetString(val.c_str(), doc.GetAllocator());
 				obj.AddMember(name.Move(), value.Move(), doc.GetAllocator());
 			}
 			root.AddMember("binary_feature", obj, doc.GetAllocator());
 		}
-		doc.Accept(writer);
 	}
 
 	void deserialize(Document& doc, int index=0) {
@@ -175,8 +171,62 @@ private:
 	map<int, string> binary_feature;
 	vector<Edge> edge;
 public:
-	template <typename Writer>
-	void serialize(Writer& writer) const {
+	template <typename V>
+	void serialize(V& doc) const {
+		Pointer("/node_id").Set(doc, node_id);
+		doc.AddMember("node_type", node_type, doc.GetAllocator());
+		doc.AddMember("node_weight", node_weight, doc.GetAllocator());
+		Value name(kStringType);
+		{
+			Value obj(kObjectType);
+			for (auto const& [type, nb] : neighbor) {
+				Value nb_obj(kObjectType);
+				for (auto const& [id, weight] : nb) {
+					name.SetString(to_string(id).c_str(), doc.GetAllocator());
+					nb_obj.AddMember(name.Move(), Value(weight).Move(), doc.GetAllocator());
+				}
+				name.SetString(to_string(type).c_str(), doc.GetAllocator());
+				obj.AddMember(name.Move(), nb_obj, doc.GetAllocator());
+			}
+			doc.AddMember("neighbor", obj, doc.GetAllocator());
+		}
+		{
+			Value obj(kObjectType);
+			for (auto const& [id, val] : uint64_feature) {
+				Value arr(kArrayType);
+				for (auto const& b : val) {
+					arr.PushBack(b, doc.GetAllocator());
+				}
+				name.SetString(to_string(id).c_str(), doc.GetAllocator());
+				obj.AddMember(name.Move(), arr.Move(), doc.GetAllocator());
+			}
+			doc.AddMember("uint64_feature", obj, doc.GetAllocator());
+		}
+		{
+			Value obj(kObjectType);
+			for (auto const& [id, val] : float_feature) {
+				Value arr(kArrayType);
+				for (auto const& b : val) {
+					arr.PushBack(b, doc.GetAllocator());
+				}
+				name.SetString(to_string(id).c_str(), doc.GetAllocator());
+				obj.AddMember(name.Move(), arr.Move(), doc.GetAllocator());
+			}
+			doc.AddMember("float_feature", obj, doc.GetAllocator());
+		}
+		{
+			Value obj(kObjectType);
+			Value value(kStringType);
+			for (auto const& [id, val] : binary_feature) {
+				name.SetString(to_string(id).c_str(), doc.GetAllocator());
+				value.SetString(val.c_str(), doc.GetAllocator());
+				obj.AddMember(name.Move(), value.Move(), doc.GetAllocator());
+			}
+			doc.AddMember("binary_feature", obj, doc.GetAllocator());
+		}
+		for (int i=0; i < edge.size(); ++i) {
+			edge[i].serialize(doc, i);
+		}
 	}
 
 	void deserialize(Document& doc) {
@@ -310,8 +360,9 @@ int test(const string& input, const string& output) {
 		ofstream of(output);
 		OStreamWrapper osw(of);
 		Writer<OStreamWrapper> writer(osw);
-		Edge& e = block.get_edges()[0];
-		e.serialize(writer);
+		Document doc;
+		block.serialize(doc);
+		doc.Accept(writer);
 		of.close();
 	}
 	return 0;
