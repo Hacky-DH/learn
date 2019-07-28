@@ -1,7 +1,9 @@
+// use member function templates to accept all comatible types
 template<typename T>
 class Rational {
 	T num, den;
 public:
+	// allow implict type conversions
 	Rational(const T& n=0, const T& d=1):num(n),den(d) {}
 	const T numerator() const {return num;}
 	const T denominator() const {return den;}
