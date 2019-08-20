@@ -80,3 +80,24 @@ def main():
     for x in range(1, 10):
         print(al(), end=' ')
     # 5 6 1 3 8 5 2 4 8
+
+def plot():
+    import matplotlib.pyplot as plt
+
+    probs = np.random.uniform(0.0, 1.0, [10])
+    probs /= np.sum(probs)
+    idxs = np.arange(0, 10)
+
+    sampler = AliasSample(probs)
+    collect = list()
+    for it in range(10000):
+        collect.append(sampler())
+        
+    plt.figure()
+    plt.subplot(121)
+    plt.bar(idxs, probs)
+    plt.title('true distribution')
+    plt.subplot(122)
+    plt.hist(collect, bins=10, density=True)
+    plt.title('sampled distribution')
+    plt.show()
