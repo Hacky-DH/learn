@@ -4,6 +4,9 @@
 using std::cout;
 using std::endl;
 
+// torch::Tensor API
+// https://pytorch.org/cppdocs/api/classat_1_1_tensor.html
+
 int main() {
         // random 10x1 tensor in range [0,100)
         auto rd = torch::randint(100, 10);
