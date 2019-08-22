@@ -2,16 +2,22 @@
 #include <iostream>
 #include <torch/torch.h>
 
+using std::cout;
+using std::endl;
+
+// build steps:
 // mkdir build && cd build
-// cmake -DCMAKE_PREFIX_PATH=/usr/local/anaconda3/lib/python3.6/site-packages/torch ..
+// cmake ..
 // make
+
 int main() {
         auto row = torch::rand(10);
         row = row/row.sum();
-        std::cout<<row<<std::endl;
+        cout<<"dist: "<<row<<endl;
         AliasSample as(row);
+        cout<<as.Str()<<"samples: ";
         for (int i=0; i<10; ++i) {
-                std::cout<<as()<<",";
+                cout<<as()<<",";
         }
-        std::cout<<std::endl;
+        cout<<endl;
 }
