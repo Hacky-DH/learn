@@ -18,10 +18,15 @@ int main() {
         auto none = (rg == 25).nonzero();
         cout<<"none: "<<none<<endl;
 
-        //index
+        rd[8] = 88;
         cout<<"index: "<<rd[8]<<","<<rd[5].item<int>()<<endl;
 
         //float type
         auto one = torch::ones(10, torch::kFloat64);
         cout<<"float: "<<one<<endl;
+
+        // matrix
+        auto mat = torch::zeros({4,5}, torch::kInt64);
+        mat[3][1] = 56;
+        cout<<"matirx: "<<mat<<endl;
 }
