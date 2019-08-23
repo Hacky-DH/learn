@@ -32,4 +32,13 @@ int main() {
         auto mat = torch::zeros({4,5}, torch::kInt64);
         mat[3][1] = 56;
         cout<<"matirx: "<<mat<<endl;
+
+        //index
+        auto src = torch::tensor({0, 1, 1, 1, 2, 2, 3, 3, 4, 4}, torch::kInt64);
+        auto dst = torch::tensor({1, 0, 2, 3, 1, 4, 1, 4, 2, 3}, torch::kInt64);
+        // find the index of dst == 1
+        auto index = (dst == 1).nonzero();
+        cout<<index<<endl;  // 0,4,6
+        // operation index to index the tensor by index
+        cout<<src.index(index)<<endl;  // 0,2,3
 }
