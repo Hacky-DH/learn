@@ -67,6 +67,8 @@ def login(driver, url, username, password):
 option = ChromeOptions()
 option.add_experimental_option('excludeSwitches', ['enable-automation'])
 # need download chromedriver
+# http://chromedriver.storage.googleapis.com/index.html
+# http://npm.taobao.org/mirrors/chromedriver/
 bs = Chrome('chromedriver.exe', options=option)
 random_delay()
 bs.maximize_window()

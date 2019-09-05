@@ -26,6 +26,8 @@ def kq(**kwargs):
     option.add_experimental_option('excludeSwitches', ['enable-automation'])
     # need download chromedriver and put to PATH
     # http://chromedriver.chromium.org/downloads
+    # http://chromedriver.storage.googleapis.com/index.html
+    # http://npm.taobao.org/mirrors/chromedriver/
     driver = Chrome('chromedriver.exe', options=option)
     try:
         url = kwargs.pop('url')
