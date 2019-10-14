@@ -10,7 +10,6 @@ start:
 end:
   hour: 21
   minute: 45
-delay_minute: 45
 exclude_weekdays:
   - 5
   - 6

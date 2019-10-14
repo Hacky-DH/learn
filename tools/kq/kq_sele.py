@@ -5,14 +5,21 @@ import time
 import sched
 import yaml
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.common.keys import Keys
 
+FORMAT = '%Y-%m-%d %H:%M:%S'
 
 def random_delay(a=5, b=10):
     time.sleep(int(random.uniform(a, b)))
 
+def delay_to_next_day(now):
+    now_stamp = datetime.timestamp(now)
+    now = now + timedelta(days=1)
+    dt = now.replace(hour=0, minute=0, second=0)
+    logging.info('delay to next day {}'.format(dt.strftime(FORMAT)))
+    time.sleep(datetime.timestamp(dt) - now_stamp)
 
 def kq(**kwargs):
     """
@@ -56,7 +63,65 @@ def kq(**kwargs):
         driver.quit()
 
 
-def run(**kwargs):
+def random_time(now, **kwargs):
+    """
+    random a run time from args
+    :param now datetime.now
+    :param kwargs:
+        hour
+        minute
+        jitter_minute
+    :return: datetime
+    """
+    hour = kwargs.pop('hour')
+    minute = kwargs.get('minute', random.randint(0, 59))
+    jitter_minute = kwargs.get('jitter_minute', 10)
+    minute += random.randint(-jitter_minute, jitter_minute)
+    sec = random.randint(0, 59)
+    return now.replace(hour=hour, minute=minute, second=sec)
+
+
+def _schedule(now, dt, **kwargs):
+    """
+    :param now datetime.now
+    :param dt
+    :param kwargs:
+        url
+        username
+        password
+    """
+    tm = dt.strftime(FORMAT)
+
+    def _run():
+        res = kq(**kwargs)
+        logging.info('run at {} {}'.format(tm, res))
+
+    if dt > now:
+        logging.info('next run will at {}'.format(tm))
+        s = sched.scheduler(time.time, time.sleep)
+        s.enterabs(datetime.timestamp(dt), 0, _run)
+        s.run()
+        return True
+    logging.warning('NOT run at time {}'.format(tm))
+    return False
+
+
+def schedule(now, **kwargs):
+    """
+    :param now datetime.now
+    :param kwargs:
+        url
+        username
+        password
+        hour
+        minute
+        jitter_minute
+    """
+    dt = random_time(now, **kwargs)
+    return _schedule(now, dt, **kwargs)
+
+
+def schedule_now(**kwargs):
     """
     :param kwargs:
         url
@@ -65,31 +130,9 @@ def run(**kwargs):
         hour
         minute
         jitter_minute
-        exclude_weekdays
-    :return:
     """
-    hour = kwargs.pop('hour')
-    minute = kwargs.get('minute', random.randint(0, 59))
-    jitter_minute = kwargs.get('jitter_minute', 10)
-    minute += random.randint(-jitter_minute, jitter_minute)
-    sec = random.randint(0, 59)
     now = datetime.now()
-    dt = now.replace(hour=hour, minute=minute, second=sec)
-    tm = dt.strftime('%Y-%m-%d %H:%M:%S')
-
-    def _run():
-        res = kq(**kwargs)
-        logging.info('run at {} {}'.format(tm, res))
-
-    exclude_weekdays = kwargs.pop('exclude_weekdays', [5, 6])
-    if dt > now and now.weekday() not in exclude_weekdays:
-        logging.info('next run will at {}'.format(tm))
-        s = sched.scheduler(time.time, time.sleep)
-        s.enterabs(datetime.timestamp(dt), 0, _run)
-        s.run()
-        return True
-    logging.warning('NOT run at time {}'.format(tm))
-    return False
+    return schedule(now, **kwargs)
 
 
 def parse_config(config_file):
@@ -102,24 +145,26 @@ def main(config_file):
                         level=logging.INFO)
     options = parse_config(config_file)
     if options.get('one_shot', True):
+        logging.info('mode: one shot')
         if options.get('run_time', 'now') == 'now':
-            logging.info('run now')
             kq(**options)
         else:
-            logging.info('run one shot')
             options.update(options.get('start', {}))
-            run(**options)
+            schedule_now(**options)
     else:
-        logging.info('run forever')
+        logging.info('mode: forever')
         while True:
+            now = datetime.now()
+            exclude_weekdays = options.pop('exclude_weekdays', [5, 6])
+            if now.weekday() in exclude_weekdays:
+                logging.warning('NOT run at week day {}'.format(now.weekday()+1))
+                delay_to_next_day(now)
+                continue
             options.update(options.get('start', {}))
-            r1 = run(**options)
+            r_start = schedule(now, **options)
             options.update(options.get('end', {}))
-            r2 = run(**options)
-            if not r1 and not r2:
-                logging.info('no plan to run, delay...')
-                delay = options.get('delay_minute', 45) * 60
-                time.sleep(delay)
+            r_end = schedule(now, **options)
+            delay_to_next_day(now)
 
 
 if __name__ == '__main__':
