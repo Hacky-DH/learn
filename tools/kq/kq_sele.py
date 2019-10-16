@@ -14,7 +14,8 @@ FORMAT = '%Y-%m-%d %H:%M:%S'
 def random_delay(a=5, b=10):
     time.sleep(int(random.uniform(a, b)))
 
-def delay_to_next_day(now):
+def delay_to_next_day():
+    now = datetime.now()
     now_stamp = datetime.timestamp(now)
     now = now + timedelta(days=1)
     dt = now.replace(hour=0, minute=0, second=0)
@@ -106,22 +107,7 @@ def _schedule(now, dt, **kwargs):
     return False
 
 
-def schedule(now, **kwargs):
-    """
-    :param now datetime.now
-    :param kwargs:
-        url
-        username
-        password
-        hour
-        minute
-        jitter_minute
-    """
-    dt = random_time(now, **kwargs)
-    return _schedule(now, dt, **kwargs)
-
-
-def schedule_now(**kwargs):
+def schedule(**kwargs):
     """
     :param kwargs:
         url
@@ -132,7 +118,8 @@ def schedule_now(**kwargs):
         jitter_minute
     """
     now = datetime.now()
-    return schedule(now, **kwargs)
+    dt = random_time(now, **kwargs)
+    return _schedule(now, dt, **kwargs)
 
 
 def parse_config(config_file):
@@ -150,7 +137,7 @@ def main(config_file):
             kq(**options)
         else:
             options.update(options.get('start', {}))
-            schedule_now(**options)
+            schedule(**options)
     else:
         logging.info('mode: forever')
         while True:
@@ -158,13 +145,13 @@ def main(config_file):
             exclude_weekdays = options.pop('exclude_weekdays', [5, 6])
             if now.weekday() in exclude_weekdays:
                 logging.warning('NOT run at week day {}'.format(now.weekday()+1))
-                delay_to_next_day(now)
+                delay_to_next_day()
                 continue
             options.update(options.get('start', {}))
-            r_start = schedule(now, **options)
+            r_start = schedule(**options)
             options.update(options.get('end', {}))
-            r_end = schedule(now, **options)
-            delay_to_next_day(now)
+            r_end = schedule(**options)
+            delay_to_next_day()
 
 
 if __name__ == '__main__':
