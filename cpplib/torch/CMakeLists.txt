@@ -6,7 +6,6 @@ set(CMAKE_CXX_STANDARD 11)
 
 add_executable(${PROJECT_NAME} learn.cpp)
 
-message(${CMAKE_SYSTEM_NAME})
 if(WIN32)
 	# search for torch
 	set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
