@@ -15,6 +15,11 @@ find_package(Torch REQUIRED)
 
 target_link_libraries(${PROJECT_NAME} ${TORCH_LIBRARIES})
 
+if (DEFINED ENV{BOOST_DIR})
+	set(BOOST_DIR $ENV{BOOST_DIR})
+	target_include_directories(${PROJECT_NAME} PRIVATE ${BOOST_DIR})
+endif()
+
 if(MSVC)
   file(GLOB TORCH_DLLS "${TORCH_INSTALL_PREFIX}/lib/*.dll")
   add_custom_command(TARGET ${PROJECT_NAME}
