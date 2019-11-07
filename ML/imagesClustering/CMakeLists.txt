@@ -6,6 +6,12 @@ project(imagesClustering)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_BUILD_TYPE Release)
 
+if (DEFINED ENV{BOOST_DIR})
+	set(BOOST_DIR $ENV{BOOST_DIR})
+	include_directories(${BOOST_DIR})
+	link_directories(${BOOST_DIR}/stage/lib)
+endif()
+
 # find_package(OpenCV REQUIRED)
 
 add_executable(${PROJECT_NAME} main.cpp)
@@ -14,11 +20,6 @@ add_executable(${PROJECT_NAME} main.cpp)
 find_package(Torch REQUIRED)
 
 target_link_libraries(${PROJECT_NAME} ${TORCH_LIBRARIES})
-
-if (DEFINED ENV{BOOST_DIR})
-	set(BOOST_DIR $ENV{BOOST_DIR})
-	target_include_directories(${PROJECT_NAME} PRIVATE ${BOOST_DIR})
-endif()
 
 if(MSVC)
   file(GLOB TORCH_DLLS "${TORCH_INSTALL_PREFIX}/lib/*.dll")
