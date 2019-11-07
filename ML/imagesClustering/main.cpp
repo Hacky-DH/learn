@@ -11,42 +11,76 @@ namespace dt = std::chrono;
 namespace fs = boost::filesystem;
 namespace po = boost::program_options;
 
+const std::string version("1.0.0");
+
 // DCN deep clustering network using PyTorch C++ API
 
 struct Net : torch::nn::Module {
 };
 
-int main(int argc, char* argv[]) {
-    auto pwd = fs::current_path();
-    auto default_data_root = pwd / ".." / ".." / "dataset" / ".local" / "mnist";
-    default_data_root = default_data_root.make_preferred();
-    std::string data_root;
-    int batch_size;
-    try {
-        po::options_description desc("Options");
-        desc.add_options()
+// Used to exit the program if the help/version option is set
+class OptionsExitsProgram : public std::exception {};
+
+class Options {
+public:
+    Options() :_options("Options") {
+        // set all options
+        fs::path default_data_root;
+        default_data_root = default_data_root / ".." / ".." /
+            "dataset" / ".local" / "mnist";
+        _options.add_options()
             ("help,h", "help message")
-            ("data-root,d", po::value<std::string>(&data_root)->
+            ("version,v", "show program version")
+            ("data-root,d", po::value<std::string>()->
                 default_value(default_data_root.string()),
-                "The root path of dataset")
-                ("batch-size,b", po::value<int>(&batch_size)->
-                    default_value(1), "batch size");
-        po::variables_map vm;
-        po::store(po::parse_command_line(argc, argv, desc), vm);
-        po::notify(vm);
-        if (vm.count("help")) {
-            cout << desc << "\n";
-            return 0;
+                "The root path of dataset");
+        _options.add_options()
+            ("batch-size,b", po::value<int>()->
+                default_value(1), "batch size");
+    }
+
+    fs::path data_root() {
+        return _results["data-root"].as<std::string>();
+    }
+
+    int batch_size() {
+        return _results["batch-size"].as<int>();
+    }
+
+    void parse(int argc, char* argv[]) {
+        po::store(po::parse_command_line(argc, argv, _options),
+            _results);
+        po::notify(_results);
+        if (_results.count("help")) {
+            cout << _options << "\n";
+            throw OptionsExitsProgram();
+        }
+        if (_results.count("version")) {
+            cout << "version " << version << "\n";
+            throw OptionsExitsProgram();
         }
     }
-    catch (po::error& e) {
+private:
+    po::options_description _options;
+    po::variables_map _results;
+};
+
+
+int main(int argc, char* argv[]) {
+    Options options;
+    try {
+        options.parse(argc, argv);
+    } catch (po::error& e) {
         cerr << "error: " << e.what() << "\n";
         return 1;
+    } catch (OptionsExitsProgram) {
+        return 0;
     }
-    catch (...) {
-        cerr << "Exception of unknown type!\n";
-        return 1;
-    }
+
+    auto pwd = fs::current_path();
+    cout << "current path is " << pwd << endl;
+    auto data_root = options.data_root();
+    int batch_size = options.batch_size();
     if (!fs::is_directory(data_root)) {
         cerr << "dataset root dir " << data_root << " don't exist" << endl;
         return 1;
