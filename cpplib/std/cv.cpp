@@ -46,6 +46,19 @@ void functor() {
     }
 }
 
+// use std::ref wrap
+// instance a will be same, using done is OK
+void functor_ref() {
+    bool done=false;
+    A a(done);
+    fun(std::ref(a));
+    {
+        P("&a= "<<(void*)&a);
+        std::unique_lock<std::mutex> lk(a.m);
+        a.cv.wait(lk, [&]{return a.done;});
+    }
+}
+
 // use condition_variable in lambda
 // works
 void lmd() {
@@ -69,4 +82,5 @@ void lmd() {
 int main() {
     lmd();
     functor();
+    functor_ref();
 }
