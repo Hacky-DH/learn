@@ -12,14 +12,17 @@ if (DEFINED ENV{BOOST_DIR})
 	link_directories(${BOOST_DIR}/stage/lib)
 endif()
 
-# find_package(OpenCV REQUIRED)
+# set env OpenCV_DIR
+find_package(OpenCV REQUIRED)
 
 add_executable(${PROJECT_NAME} main.cpp)
 
 # set env Torch_DIR or CMAKE_PREFIX_PATH to libtorch
 find_package(Torch REQUIRED)
 
-target_link_libraries(${PROJECT_NAME} ${TORCH_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}
+                      ${TORCH_LIBRARIES}
+                      ${OpenCV_LIBS})
 
 if(MSVC)
   file(GLOB TORCH_DLLS "${TORCH_INSTALL_PREFIX}/lib/*.dll")
