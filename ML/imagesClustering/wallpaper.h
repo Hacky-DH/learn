@@ -28,18 +28,9 @@ class WallPaper {
     WALLPAPEROPT last_opt;
     std::wstring last_wallpaper;
 public:
-    WallPaper() :ptr(nullptr) {
-        CoInitialize(nullptr);
-        std::locale::global(std::locale(""));
-        last_opt.dwSize = sizeof(last_opt);
-    }
+    WallPaper();
 
-    ~WallPaper() {
-        if (ptr != nullptr) {
-            ptr->Release();
-        }
-        CoUninitialize();
-    }
+    ~WallPaper();
 
     //set the wallpaper and style
     // make sure enable the active desktop(default is enable)
@@ -54,10 +45,13 @@ public:
 
     bool apply(const std::string& wallpaper, uint32_t style);
 
+
     bool restore() {
         return apply(last_wallpaper, last_opt.dwStyle);
     }
 };
+
+void test_wallpaper(const std::string& path);
 #else
 class WallPaper {
 public:
@@ -72,5 +66,3 @@ public:
     }
 };
 #endif
-
-void test_wallpaper(const std::string& path);

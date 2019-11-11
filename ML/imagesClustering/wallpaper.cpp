@@ -2,16 +2,24 @@
 
 
 #ifdef WIN32
-bool WallPaper::apply(const std::wstring& wallpaper, uint32_t style) {
-    HRESULT hr = CoCreateInstance(CLSID_ActiveDesktop,
+WallPaper::WallPaper() {
+    CoInitialize(nullptr);
+    CoCreateInstance(CLSID_ActiveDesktop,
         NULL, CLSCTX_INPROC_SERVER,
         IID_IActiveDesktop, (void**)&ptr);
-    if (FAILED(hr)) {
-        ptr = nullptr;
-        return false;
+    std::locale::global(std::locale(""));
+    last_opt.dwSize = sizeof(last_opt);
+}
+
+WallPaper::~WallPaper() {
+    if (ptr != nullptr) {
+        ptr->Release();
     }
+    CoUninitialize();
+}
+bool WallPaper::apply(const std::wstring& wallpaper, uint32_t style) {
     WCHAR path[MAX_PATH];
-    hr = ptr->GetWallpaper(path, MAX_PATH, 0);
+    HRESULT hr = ptr->GetWallpaper(path, MAX_PATH, 0);
     if (FAILED(hr)) {
         return false;
     }
@@ -23,7 +31,11 @@ bool WallPaper::apply(const std::wstring& wallpaper, uint32_t style) {
         return false;
     }
     cout << "last opt is " << last_opt.dwStyle << endl;
-    hr = ptr->SetWallpaper(wallpaper.c_str(), 0);
+    if(wallpaper.empty()){
+        hr = ptr->SetWallpaper(path, 0);
+    } else {
+        hr = ptr->SetWallpaper(wallpaper.c_str(), 0);
+    }
     if (FAILED(hr)) {
         return false;
     }
@@ -47,7 +59,6 @@ bool WallPaper::apply(const std::string& wallpaper, uint32_t style) {
         to_utf<wchar_t>(wallpaper, "GBK");
     return apply(_wallpaper, style);
 }
-#endif
 
 void test_wallpaper(const std::string& path) {
     WallPaper p;
@@ -56,3 +67,4 @@ void test_wallpaper(const std::string& path) {
         std::this_thread::sleep_for(1s);
     }
 }
+#endif
