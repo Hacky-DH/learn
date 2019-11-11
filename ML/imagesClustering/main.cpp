@@ -68,18 +68,23 @@ int main(int argc, char* argv[]) {
         cerr << "dataset root dir " << data_root << " don't exist" << endl;
         return 1;
     }
-    cout << "load mnist from " << data_root << endl;
     try {
-        auto dataset = torch::data::datasets::MNIST(data_root.string());
+        //mnist dataset filenames:
+        //train-images-idx3-ubyte train-labels-idx1-ubyte
+        //t10k-images-idx3-ubyte t10k-labels-idx1-ubyte
+        namespace td = torch::data::datasets;
+        auto train_data = td::MNIST(data_root.string());
+        auto test_data = td::MNIST(data_root.string(), td::MNIST::Mode::kTest);
+        cout << "load mnist train size " << train_data.size().value()
+            << ", test size " << test_data.size().value() << endl;
     }
     catch (const std::exception& e) {
         cerr << e.what() << endl;
     }
-    
+
     //auto dataset = torch::data::datasets::MNIST(data_root.string()).
     //    map(torch::data::transforms::Normalize<>(0.13707, 0.3081)).
     //    map(torch::data::transforms::Stack<>());
-    //cout << dataset.size().value() << endl;
     //auto data_loader = torch::data::make_data_loader(std::move(dataset), 64);
 
     auto net = std::make_shared<Net>();
