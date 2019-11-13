@@ -23,6 +23,8 @@ namespace dt = std::chrono;
 
 
 #ifdef WIN32
+extern std::string WPSTYLES[];
+
 class WallPaper {
     IActiveDesktop *ptr;
     WALLPAPEROPT last_opt;
@@ -45,6 +47,8 @@ public:
 
     bool apply(const std::string& wallpaper, uint32_t style);
 
+    // set wallpaper styles round, one by one
+    bool round();
 
     bool restore() {
         return apply(last_wallpaper, last_opt.dwStyle);
@@ -52,6 +56,7 @@ public:
 };
 
 void test_wallpaper(const std::string& path);
+void set_style_or_round(const std::string& style);
 #else
 class WallPaper {
 public:

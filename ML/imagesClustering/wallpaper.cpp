@@ -2,6 +2,12 @@
 
 
 #ifdef WIN32
+std::string WPSTYLES[] = {
+    "center", "tile",
+    "stretch", "keepaspect",
+    "croptofit", "span", "max"
+};
+
 WallPaper::WallPaper() {
     CoInitialize(nullptr);
     CoCreateInstance(CLSID_ActiveDesktop,
@@ -24,14 +30,11 @@ bool WallPaper::apply(const std::wstring& wallpaper, uint32_t style) {
         return false;
     }
     last_wallpaper = path;
-    std::wcout << "last wallpaper path " <<
-        last_wallpaper << endl;
     hr = ptr->GetWallpaperOptions(&last_opt, 0);
     if (FAILED(hr)) {
         return false;
     }
-    cout << "last opt is " << last_opt.dwStyle << endl;
-    if(wallpaper.empty()){
+    if(wallpaper.empty()) {
         hr = ptr->SetWallpaper(path, 0);
     } else {
         hr = ptr->SetWallpaper(wallpaper.c_str(), 0);
@@ -50,7 +53,8 @@ bool WallPaper::apply(const std::wstring& wallpaper, uint32_t style) {
         return false;
     }
     std::wcout << "set wallpaper path " <<
-        wallpaper << ", style " << style << endl;
+        (wallpaper.empty() ? path : wallpaper.c_str())
+        << ", style " << WPSTYLES[style].c_str() << endl;
     return true;
 }
 
@@ -60,11 +64,52 @@ bool WallPaper::apply(const std::string& wallpaper, uint32_t style) {
     return apply(_wallpaper, style);
 }
 
+bool WallPaper::round() {
+    WCHAR path[MAX_PATH];
+    HRESULT hr = ptr->GetWallpaper(path, MAX_PATH, 0);
+    if (FAILED(hr)) {
+        return false;
+    }
+    last_wallpaper = path;
+    hr = ptr->GetWallpaperOptions(&last_opt, 0);
+    if (FAILED(hr)) {
+        return false;
+    }
+    hr = ptr->SetWallpaper(path, 0);
+    if (FAILED(hr)) {
+        return false;
+    }
+    auto opt = last_opt;
+    opt.dwStyle = (last_opt.dwStyle + 1) % WPSTYLE_MAX;
+    hr = ptr->SetWallpaperOptions(&opt, 0);
+    if (FAILED(hr)) {
+        return false;
+    }
+    hr = ptr->ApplyChanges(AD_APPLY_ALL);
+    if (FAILED(hr)) {
+        return false;
+    }
+    std::wcout << "set wallpaper path " << path <<
+        ", style " << WPSTYLES[opt.dwStyle].c_str() << endl;
+    return true;
+}
+
 void test_wallpaper(const std::string& path) {
     WallPaper p;
     for (int i = WPSTYLE_CENTER; i < WPSTYLE_MAX; ++i) {
         p.apply(path, i);
         std::this_thread::sleep_for(1s);
+    }
+}
+
+// example: set_style_or_round(argc > 1 ? argv[1] : "8");
+void set_style_or_round(const std::string& style) {
+    uint32_t s = style[0] - '0';
+    WallPaper p;
+    if (s >= 0 && s < WPSTYLE_MAX) {
+        p.apply("", s);
+    } else {
+        p.round();
     }
 }
 #endif
