@@ -46,6 +46,16 @@ private:
     po::variables_map _results;
 };
 
+void display_image(const std::string& path) {
+    cv::Mat image = cv::imread(path);
+    if (image.empty()) {
+        throw std::runtime_error("Could not open the image");
+    }
+    cv::namedWindow("Display image");
+    cv::imshow("Display image", image);
+    cv::waitKey(0);
+}
+
 
 int main(int argc, char* argv[]) {
     Options options;
