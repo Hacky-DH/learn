@@ -8,10 +8,8 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
-#include <opencv2/imgproc.hpp>
-#include <opencv2/highgui.hpp>
-
 #include "wallpaper.h"
+#include "dataset.h"
 
 using std::cout;
 using std::wcout;
@@ -37,6 +35,7 @@ class Options {
 public:
     Options();
 
+    std::string data_config();
     std::string data_root();
     int batch_size();
 
@@ -45,16 +44,6 @@ private:
     po::options_description _options;
     po::variables_map _results;
 };
-
-void display_image(const std::string& path) {
-    cv::Mat image = cv::imread(path);
-    if (image.empty()) {
-        throw std::runtime_error("Could not open the image");
-    }
-    cv::namedWindow("Display image");
-    cv::imshow("Display image", image);
-    cv::waitKey(0);
-}
 
 
 int main(int argc, char* argv[]) {
@@ -112,15 +101,26 @@ Options::Options() :_options("Options") {
     fs::path default_data_root;
     default_data_root = default_data_root / ".." / ".." /
         "dataset" / ".local" / "mnist";
+    fs::path default_data_config;
+    default_data_config = default_data_config / ".local" /
+        "data.config";
     _options.add_options()
         ("help,h", "help message")
         ("version,v", "show program version")
+        ("data-config,c", po::value<std::string>()->
+            default_value(default_data_config.string()),
+            "The root path of dataset");
+    _options.add_options()
         ("data-root,d", po::value<std::string>()->
             default_value(default_data_root.string()),
             "The root path of dataset");
     _options.add_options()
         ("batch-size,b", po::value<int>()->
             default_value(1), "batch size");
+}
+
+std::string Options::data_config() {
+    return _results["data-config"].as<std::string>();
 }
 
 std::string Options::data_root() {

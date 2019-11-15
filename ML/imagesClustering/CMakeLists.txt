@@ -15,7 +15,7 @@ endif()
 # set env OpenCV_DIR
 find_package(OpenCV REQUIRED)
 
-add_executable(${PROJECT_NAME} main.cpp wallpaper.cpp)
+add_executable(${PROJECT_NAME} main.cpp wallpaper.cpp dataset.cpp)
 
 # set env Torch_DIR or CMAKE_PREFIX_PATH to libtorch
 find_package(Torch REQUIRED)

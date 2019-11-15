@@ -13,6 +13,8 @@
 #include <ShlObj.h>
 #endif
 
+namespace ic {
+
 using std::cout;
 using std::wcout;
 using std::cerr;
@@ -71,3 +73,5 @@ public:
     }
 };
 #endif
+
+}

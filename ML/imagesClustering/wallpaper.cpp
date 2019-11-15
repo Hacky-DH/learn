@@ -1,5 +1,6 @@
 #include "wallpaper.h"
 
+namespace ic {
 
 #ifdef WIN32
 std::string WPSTYLES[] = {
@@ -113,3 +114,4 @@ void set_style_or_round(const std::string& style) {
     }
 }
 #endif
+}
