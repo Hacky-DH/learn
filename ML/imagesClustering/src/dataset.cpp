@@ -17,7 +17,7 @@ std::vector<fs::path> find_possible_paths(
     const std::string& config_path,
     const std::string& env) {
     auto cwd = fs::current_path();
-    static std::list<fs::path> all_possible_paths{
+    std::list<fs::path> all_possible_paths{
         cwd / ".." / ".." / ".." / ".." / "dataset" / ".local" / "mnist",
         cwd / ".." / ".." / ".." / "dataset" / ".local" / "mnist",
         cwd / ".." / ".." / "dataset" / ".local" / "mnist",
@@ -56,9 +56,12 @@ std::vector<fs::path> find_possible_paths(
 std::vector<td::MNIST> load_mnist(const std::string& path) {
     auto paths = find_possible_paths(path, "MNIST_ROOT");
     for (auto p : paths) {
-        auto train_data = td::MNIST(p.string());
-        auto test_data = td::MNIST(p.string(), td::MNIST::Mode::kTest);
-        return {train_data, test_data};
+        try {
+            auto train_data = td::MNIST(p.string());
+            auto test_data = td::MNIST(p.string(), td::MNIST::Mode::kTest);
+            return { train_data, test_data };
+        }catch (const std::exception&) { // try another path
+        }
     }
     return {};
 }
