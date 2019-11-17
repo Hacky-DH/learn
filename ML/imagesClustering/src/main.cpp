@@ -5,9 +5,7 @@
 
 #include <torch/torch.h>
 
-#include <boost/program_options.hpp>
-#include <boost/filesystem.hpp>
-
+#include "options.h"
 #include "wallpaper.h"
 #include "dataset.h"
 
@@ -17,33 +15,17 @@ using std::cerr;
 using std::wcerr;
 using std::endl;
 using namespace std::chrono_literals;
+using namespace ic;
 namespace dt = std::chrono;
-namespace fs = boost::filesystem;
-namespace po = boost::program_options;
 
-const std::string version("1.0.0");
+
 
 // DCN deep clustering network using PyTorch C++ API
 
 struct Net : torch::nn::Module {
 };
 
-// Used to exit the program if the help/version option is set
-class OptionsExitsProgram : public std::exception {};
 
-class Options {
-public:
-    Options();
-
-    std::string data_config();
-    std::string data_root();
-    int batch_size();
-
-    void parse(int argc, char* argv[]);
-private:
-    po::options_description _options;
-    po::variables_map _results;
-};
 
 
 int main(int argc, char* argv[]) {
@@ -92,55 +74,5 @@ int main(int argc, char* argv[]) {
     catch (const std::exception& e) {
         cerr << e.what() << endl;
         return 1;
-    }
-}
-
-// class Options
-Options::Options() :_options("Options") {
-    // set all options
-    fs::path default_data_root;
-    default_data_root = default_data_root / ".." / ".." /
-        "dataset" / ".local" / "mnist";
-    fs::path default_data_config;
-    default_data_config = default_data_config / ".local" /
-        "data.config";
-    _options.add_options()
-        ("help,h", "help message")
-        ("version,v", "show program version")
-        ("data-config,c", po::value<std::string>()->
-            default_value(default_data_config.string()),
-            "The root path of dataset");
-    _options.add_options()
-        ("data-root,d", po::value<std::string>()->
-            default_value(default_data_root.string()),
-            "The root path of dataset");
-    _options.add_options()
-        ("batch-size,b", po::value<int>()->
-            default_value(1), "batch size");
-}
-
-std::string Options::data_config() {
-    return _results["data-config"].as<std::string>();
-}
-
-std::string Options::data_root() {
-    return _results["data-root"].as<std::string>();
-}
-
-int Options::batch_size() {
-    return _results["batch-size"].as<int>();
-}
-
-void Options::parse(int argc, char* argv[]) {
-    po::store(po::parse_command_line(argc, argv, _options),
-        _results);
-    po::notify(_results);
-    if (_results.count("help")) {
-        cout << _options << "\n";
-        throw OptionsExitsProgram();
-    }
-    if (_results.count("version")) {
-        cout << "version " << version << "\n";
-        throw OptionsExitsProgram();
     }
 }

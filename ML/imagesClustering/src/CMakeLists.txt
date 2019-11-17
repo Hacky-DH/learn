@@ -1,4 +1,9 @@
-add_executable(${PROJECT_NAME} main.cpp wallpaper.cpp dataset.cpp)
+add_executable(${PROJECT_NAME}
+  main.cpp
+  wallpaper.cpp
+  dataset.cpp
+  options.cpp
+)
 
 target_link_libraries(${PROJECT_NAME}
                       ${TORCH_LIBRARIES}
