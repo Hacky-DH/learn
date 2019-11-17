@@ -4,6 +4,7 @@
 #include <string>
 #include <chrono>
 #include <thread>
+#include <random>
 
 template<typename T>
 struct convert;
@@ -81,5 +82,26 @@ public:
 
     bool reach(dt::seconds duration) {
         return dt::system_clock::now() - start >= duration;
+    }
+};
+
+/**
+* @bref int random generator
+* @example
+* @code
+*   random_generator rg;
+*   size_t rand = rg.next<size_t>(1,5);
+*/
+class random_generator {
+    std::default_random_engine generator;
+public:
+    random_generator() {
+        auto seed = std::chrono::system_clock::now().time_since_epoch().count();
+        generator.seed(seed);
+    }
+    template<typename T>
+    T next(T lower, T upper) {
+        std::uniform_int_distribution<T> distribution(lower, upper);
+        return distribution(generator);
     }
 };
