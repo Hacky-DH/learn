@@ -23,3 +23,4 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 option(COPYDLL "copy dlls" OFF)
 
 add_subdirectory(src)
+add_subdirectory(test)
