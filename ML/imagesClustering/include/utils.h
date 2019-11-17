@@ -2,6 +2,8 @@
 
 #include <cstdlib>
 #include <string>
+#include <chrono>
+#include <thread>
 
 template<typename T>
 struct convert;
@@ -43,3 +45,41 @@ bool get_env(const std::string& key, T& value) {
     value = convert<T>::action(ptr);
     return true;
 }
+
+namespace dt = std::chrono;
+/**
+* @bref timer
+* @example
+* @code
+*   Timer t;
+*   long e = t.elapsed();
+*/
+class Timer {
+    dt::time_point<dt::system_clock> start;
+public:
+    Timer() {
+        start = dt::system_clock::now();
+        //dt::high_resolution_clock::now()
+    }
+
+    static void sleep(long seconds) {
+        std::this_thread::sleep_for(dt::seconds(seconds));
+    }
+
+    void reset() {
+        start = dt::system_clock::now();
+    }
+
+    /*
+    * milliseconds
+    */
+    long elapsed() {
+        auto end = dt::system_clock::now();
+        auto elp = dt::duration_cast<dt::milliseconds>(end - start);
+        return elp.count();
+    }
+
+    bool reach(dt::seconds duration) {
+        return dt::system_clock::now() - start >= duration;
+    }
+};
