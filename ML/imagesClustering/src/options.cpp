@@ -21,7 +21,7 @@ Options::Options() :_options("Options") {
             "The root path of dataset");
     _options.add_options()
         ("batch-size,b", po::value<int>()->
-            default_value(1), "batch size");
+            default_value(64), "batch size");
 }
 
 std::string Options::data_config() {
