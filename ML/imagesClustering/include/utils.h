@@ -88,7 +88,7 @@ public:
     /*
     * milliseconds
     */
-    long elapsed() {
+    int64_t elapsed() {
         auto end = dt::system_clock::now();
         auto elp = dt::duration_cast<dt::milliseconds>(end - start);
         return elp.count();
@@ -111,7 +111,7 @@ class random_generator {
 public:
     random_generator() {
         auto seed = std::chrono::system_clock::now().time_since_epoch().count();
-        generator.seed(seed);
+        generator.seed(static_cast<uint32_t>(seed));
     }
     template<typename T>
     T next(T lower, T upper) {
