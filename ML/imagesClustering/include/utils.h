@@ -11,39 +11,53 @@ struct convert;
 
 template<>
 struct convert<std::string> {
-    static std::string action(const char* str) {
-        return std::string(str);
+    static std::string action(const std::string& str) {
+        return str;
     }
 };
 
 template<>
 struct convert<int> {
-    static int action(const char* str) {
+    static int action(const std::string& str) {
         return std::stoi(str);
     }
 };
 
 template<>
 struct convert<long> {
-    static long action(const char* str) {
+    static long action(const std::string& str) {
         return std::stol(str);
     }
 };
 
 template<>
 struct convert<float> {
-    static float action(const char* str) {
+    static float action(const std::string& str) {
         return std::stof(str);
     }
 };
 
 template<typename T>
 bool get_env(const std::string& key, T& value) {
+    std::string _value;
+    // _dupenv_s is safe then std::getenv on windows
+#ifdef WIN32
+    char *buf = nullptr;
+    size_t sz;
+    if (0 == _dupenv_s(&buf, &sz, key.c_str()) && buf != nullptr) {
+        _value = std::string(buf);
+        free(buf);
+    } else {
+        return false;
+    }
+#else
     auto ptr = std::getenv(key.c_str());
     if (ptr == nullptr) {
         return false;
     }
-    value = convert<T>::action(ptr);
+    _value = ptr;
+#endif
+    value = convert<T>::action(_value);
     return true;
 }
 
