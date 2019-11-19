@@ -13,7 +13,8 @@ void train(
     size_t log_per_steps = 50,
     size_t checkpoint_per_epoch = 5,
     std::string model_dir = "model") {
-    for (size_t epoch = start_epoch; epoch <= num_epochs; ++epoch) {
+    model->train();
+    for (size_t epoch = start_epoch; epoch < num_epochs; ++epoch) {
         size_t step = 0;
         for (auto& batch : *data_loader) {
             optimizer.zero_grad();
@@ -33,4 +34,28 @@ void train(
             torch::save(model, file.string());
         }
     }
+}
+
+template <typename Module, typename DataLoader>
+void test(
+    Module model,
+    DataLoader& data_loader,
+    size_t dataset_size) {
+    torch::NoGradGuard no_grad;
+    model->eval();
+    double test_loss = 0;
+    int32_t correct = 0;
+    for (const auto& batch : *data_loader) {
+        auto output = model.forward(batch.data);
+        test_loss += torch::nll_loss(output, batch.target,
+            /*weight=*/{}, at::Reduction::Sum)
+            .template item<float>();
+        auto pred = output.argmax(1);
+        correct += pred.eq(batch.target).sum().template item<int64_t>();
+    }
+    test_loss /= dataset_size;
+    std::printf(
+        "\nTest set: Average loss: %.4f | Accuracy: %.3f\n",
+        test_loss,
+        static_cast<double>(correct) / dataset_size);
 }

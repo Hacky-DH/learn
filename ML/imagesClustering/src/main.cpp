@@ -70,14 +70,14 @@ int main(int argc, char* argv[]) {
         cout << "load mnist train size " << mnist[0].size().value()
             << ", test size " << mnist[1].size().value() << endl;
 
-        //auto train_data = mnist[0].map(tt::Normalize<>(0.13707, 0.3081)).
-        //    map(tt::Stack<>());
-        auto train_data = mnist[0].map(tt::Stack<>());
+        auto train_data = mnist[0].map(tt::Normalize<>(0.13707, 0.3081)).
+            map(tt::Stack<>());
         int batch_size = options.batch_size();
         auto data_loader = torch::data::make_data_loader(std::move(train_data), batch_size);
 
         auto model = std::make_shared<Net>();
-        torch::optim::SGD optimizer(model->parameters(), 0.01);
+        torch::optim::SGD optimizer(model->parameters(),
+            torch::optim::SGDOptions(0.01).momentum(0.5));
         train(model, optimizer, data_loader);
 
     } catch (const std::exception& e) {
