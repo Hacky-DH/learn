@@ -46,7 +46,7 @@ void test(
         auto output = model->forward(batch.data);
         // no at::Reduction::Sum?
         test_loss += torch::nll_loss(output, batch.target,
-            /*weight=*/{}, 2)
+            /*weight=*/{}, /*reduction=sum*/2)
             .template item<float>();
         auto pred = output.argmax(1);
         correct += pred.eq(batch.target).sum().template item<int64_t>();

@@ -4,6 +4,14 @@
 namespace ic {
 namespace nn = torch::nn;
 
+struct DNN: torch::nn::Module {
+    DNN(size_t input_size=784, size_t num_classes=10,
+        size_t h1=64, size_t h2=32);
+    torch::Tensor forward(torch::Tensor x);
+    size_t input_size;
+    torch::nn::Linear fc1{nullptr}, fc2{nullptr}, fc3{nullptr};
+};
+
 // DCN deep conv network
 struct DCN : nn::Module {
     DCN();
