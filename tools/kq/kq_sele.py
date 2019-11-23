@@ -36,8 +36,9 @@ def kq(**kwargs):
     # http://chromedriver.chromium.org/downloads
     # http://chromedriver.storage.googleapis.com/index.html
     # http://npm.taobao.org/mirrors/chromedriver/
-    driver = Chrome('chromedriver.exe', options=option)
+    driver = None
     try:
+        driver = Chrome('chromedriver', options=option)
         url = kwargs.pop('url')
         username = kwargs.pop('username')
         password = kwargs.pop('password')
@@ -61,7 +62,8 @@ def kq(**kwargs):
     except:
         return 'failed'
     finally:
-        driver.quit()
+        if driver:
+            driver.quit()
 
 
 def random_time(now, **kwargs):
