@@ -7,6 +7,7 @@
 #include "wallpaper.h"
 #include "dataset.h"
 #include "train.h"
+#include "models.h"
 
 using std::cout;
 using std::wcout;
@@ -19,36 +20,7 @@ namespace nn = torch::nn;
 namespace tt = torch::data::transforms;
 
 
-// DCN deep clustering network using PyTorch C++ API
-
-struct Net : nn::Module {
-    Net():
-        conv1(torch::nn::Conv2dOptions(1, 10, /*kernel_size=*/5)),
-        conv2(torch::nn::Conv2dOptions(10, 20, /*kernel_size=*/5)),
-        fc1(320, 50),
-        fc2(50, 10) {
-        register_module("conv1", conv1);
-        register_module("conv2", conv2);
-        register_module("conv2_drop", conv2_drop);
-        register_module("fc1", fc1);
-        register_module("fc2", fc2);
-    }
-    torch::Tensor forward(torch::Tensor x) {
-        x = torch::relu(torch::max_pool2d(conv1->forward(x), 2));
-        x = torch::relu(
-            torch::max_pool2d(conv2_drop->forward(conv2->forward(x)), 2));
-        x = x.view({-1, 320});
-        x = torch::relu(fc1->forward(x));
-        x = torch::dropout(x, /*p=*/0.5, /*training=*/is_training());
-        x = fc2->forward(x);
-        return torch::log_softmax(x, /*dim=*/1);
-    }
-    nn::Conv2d conv1;
-    nn::Conv2d conv2;
-    nn::FeatureDropout conv2_drop;
-    nn::Linear fc1;
-    nn::Linear fc2;
-};
+// PyTorch C++ API
 
 
 int main(int argc, char* argv[]) {
@@ -82,7 +54,7 @@ int main(int argc, char* argv[]) {
         auto test_data_loader = torch::data::make_data_loader(
                 std::move(test_data), 1024);
 
-        auto model = std::make_shared<Net>();
+        auto model = std::make_shared<DCN>();
         torch::optim::SGD optimizer(model->parameters(),
             torch::optim::SGDOptions(0.01).momentum(0.5));
 

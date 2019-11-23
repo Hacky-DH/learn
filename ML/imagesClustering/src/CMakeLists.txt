@@ -3,6 +3,9 @@ add_executable(${PROJECT_NAME}
   wallpaper.cpp
   dataset.cpp
   options.cpp
+  models/cnn.cpp
+  models/dcn.cpp
+  models/dnn.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
