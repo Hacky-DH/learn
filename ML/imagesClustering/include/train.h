@@ -1,6 +1,10 @@
 #pragma once
 #include <iostream>
+#include <boost/filesystem.hpp>
 #include "utils.h"
+
+namespace ic {
+namespace fs = boost::filesystem;
 namespace nn = torch::nn;
 
 template <typename Module, typename DataLoader>
@@ -55,3 +59,4 @@ void test(
     std::cout << "\nTest set: Average loss: " << test_loss << " | Accuracy: " <<
         static_cast<double>(correct) / dataset_size << std::endl;
 }
+} //namespace ic

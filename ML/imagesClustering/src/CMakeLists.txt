@@ -8,9 +8,14 @@ add_executable(${PROJECT_NAME}
   models/dnn.cpp
 )
 
-target_link_libraries(${PROJECT_NAME}
-                      ${TORCH_LIBRARIES}
-                      ${OpenCV_LIBS})
+set(libs ${TORCH_LIBRARIES} ${OpenCV_LIBS})
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+set(libs ${libs} boost_system
+  boost_program_options
+  boost_filesystem)
+endif()
+
+target_link_libraries(${PROJECT_NAME} ${libs})
 
 if(MSVC AND COPYDLL)
   file(GLOB TORCH_DLLS "${TORCH_INSTALL_PREFIX}/lib/*.dll")

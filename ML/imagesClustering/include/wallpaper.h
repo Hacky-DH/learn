@@ -20,7 +20,9 @@ using std::wcout;
 using std::cerr;
 using std::wcerr;
 using std::endl;
+#ifdef _MSC_VER
 using namespace std::chrono_literals;
+#endif
 namespace dt = std::chrono;
 
 
