@@ -8,6 +8,7 @@
 #include "dataset.h"
 #include "train.h"
 #include "models.h"
+#include "utils.h"
 
 using std::cout;
 using std::wcout;

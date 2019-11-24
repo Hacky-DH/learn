@@ -5,6 +5,14 @@
 #include <chrono>
 #include <thread>
 #include <random>
+#include <fstream>
+#include <sstream>
+#include <iomanip>
+
+#ifdef WIN32
+#include <windows.h>
+#include <psapi.h>
+#endif
 
 template<typename T>
 struct convert;
@@ -117,5 +125,77 @@ public:
     T next(T lower, T upper) {
         std::uniform_int_distribution<T> distribution(lower, upper);
         return distribution(generator);
+    }
+};
+
+/*
+ * get memory usage of current process
+*/
+class MemUsage {
+    size_t rss, peak; // in bytes
+    void get() {
+        rss = peak = 0;
+#ifdef WIN32
+        PROCESS_MEMORY_COUNTERS info;
+        info.cb = sizeof(info);
+        if (GetProcessMemoryInfo(GetCurrentProcess(),
+            &info, sizeof(info))) {
+            rss = info.WorkingSetSize;
+            peak = info.PeakWorkingSetSize;
+        }
+#else
+        std::ifstream status("/proc/self/status");
+        if (status.is_open()) {
+            std::string line, name;
+            while (getline(status, line)) {
+                std::istringstream iss(line);
+                iss >> name;
+                if (name == "VmPeak:") {
+                    iss >> peak;
+                    peak *= 1024;
+                }
+                if (name == "VmRSS:") {
+                    iss >> rss;
+                    rss *= 1024;
+                }
+            }
+            status.close();
+        }
+#endif
+    }
+public:
+    static std::string bytes2str(size_t bytes) {
+        static size_t units[] = {
+            1024,
+            1024 * 1024,
+            1024 * 1024 * 1024,
+            1024 * 1024 * 1024 * 1024,
+            1024 * 1024 * 1024 * 1024 * 1024,
+        };
+        static std::string ustr[] = { "Bytes", "KB", "MB",
+            "GB", "TB", "PB" };
+        for (size_t i = 0; i < sizeof(units) /
+            sizeof(units[0]); ++i) {
+            if (bytes < units[i]) {
+                std::ostringstream oss;
+                if (i == 0) {
+                    oss << bytes;
+                } else {
+                    oss << std::setprecision(2)<<std::fixed
+                        << (double)bytes / units[i - 1];
+                }
+                oss << " " << ustr[i];
+                return oss.str();
+            }
+        }
+        return "too large bytes " + std::to_string(bytes);
+    }
+
+    std::string str() {
+        get();
+        std::ostringstream oss;
+        oss << "memory usage: RSS " << bytes2str(rss) <<
+            ", Peak RSS " << bytes2str(peak);
+        return oss.str();
     }
 };
