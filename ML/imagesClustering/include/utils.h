@@ -165,12 +165,8 @@ class MemUsage {
     }
 public:
     static std::string bytes2str(size_t bytes) {
-        static size_t units[] = {
-            1024,
-            1024 * 1024,
-            1024 * 1024 * 1024,
-            1024 * 1024 * 1024 * 1024,
-            1024 * 1024 * 1024 * 1024 * 1024,
+        static size_t units[] = { 1 << 10, 1 << 20,
+            1 << 30, 1 << 40, 1 << 50,
         };
         static std::string ustr[] = { "Bytes", "KB", "MB",
             "GB", "TB", "PB" };
@@ -181,7 +177,7 @@ public:
                 if (i == 0) {
                     oss << bytes;
                 } else {
-                    oss << std::setprecision(2)<<std::fixed
+                    oss << std::setprecision(2) << std::fixed
                         << (double)bytes / units[i - 1];
                 }
                 oss << " " << ustr[i];
