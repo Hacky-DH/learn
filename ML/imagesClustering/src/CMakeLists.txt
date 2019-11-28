@@ -3,6 +3,7 @@ add_executable(${PROJECT_NAME}
   wallpaper.cpp
   dataset.cpp
   options.cpp
+  log.cpp
   models/cnn.cpp
   models/dcn.cpp
   models/dnn.cpp

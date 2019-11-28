@@ -2,6 +2,7 @@
 #include <iostream>
 #include <boost/filesystem.hpp>
 #include "utils.h"
+#include "log.h"
 
 namespace ic {
 namespace fs = boost::filesystem;
@@ -16,6 +17,7 @@ void train(
     size_t log_per_steps = 100,
     size_t checkpoint_per_epoch = 5,
     std::string model_dir = "model") {
+    auto &lg = log::ic_logger::get();
     model->train();
     size_t step = 0;
     for (auto& batch : *data_loader) {
@@ -26,8 +28,8 @@ void train(
         loss.backward();
         optimizer.step();
         if (++step % log_per_steps == 0) {
-            std::cout << "Epoch: [" << epoch + 1 << "] Batch: [" << step
-                << "] Loss: " << loss.item<float>() << std::endl;
+            BOOST_LOG_SEV(lg, info) << "Epoch: [" << epoch + 1 << "] Batch: ["
+                << step << "] Loss: " << loss.item<float>();
         }
     }
     if ((epoch + 1) % checkpoint_per_epoch == 0) {
@@ -42,6 +44,7 @@ void test(
     Module model,
     DataLoader& data_loader,
     size_t dataset_size) {
+    auto &lg = log::ic_logger::get();
     torch::NoGradGuard no_grad;
     model->eval();
     double test_loss = 0;
@@ -56,7 +59,7 @@ void test(
         correct += pred.eq(batch.target).sum().template item<int64_t>();
     }
     test_loss /= dataset_size;
-    std::cout << "\nTest set: Average loss: " << test_loss << " | Accuracy: " <<
-        static_cast<double>(correct) / dataset_size << std::endl;
+    BOOST_LOG_SEV(lg, info) << "Test set: Average loss: " << test_loss
+        << " | Accuracy: " << static_cast<double>(correct) / dataset_size;
 }
 } //namespace ic

@@ -9,26 +9,22 @@
 #include "train.h"
 #include "models.h"
 #include "utils.h"
+#include "log.h"
 
-using std::cout;
-using std::wcout;
-using std::cerr;
-using std::wcerr;
-using std::endl;
 using namespace ic;
 namespace nn = torch::nn;
 namespace tt = torch::data::transforms;
 
-
 // PyTorch C++ API
 
-
 int main(int argc, char* argv[]) {
+    log::init();
+    auto &lg = log::ic_logger::get();
     Options options;
     try {
         options.parse(argc, argv);
     } catch (po::error& e) {
-        cerr << "error: " << e.what() << "\n";
+        BOOST_LOG_SEV(lg, error)<< e.what();
         return 1;
     } catch (OptionsExitsProgram) {
         return 0;
@@ -36,11 +32,12 @@ int main(int argc, char* argv[]) {
     try {
         auto mnist = load_mnist(options.data_root());
         if (mnist.empty()) {
-            cerr << "ERROR: no paths to load mnist" << endl;
+            BOOST_LOG_SEV(lg, error) << "no paths to load mnist";
             return 1;
         }
-        cout << "load mnist train size " << mnist[0].size().value()
-            << ", test size " << mnist[1].size().value() << endl;
+        BOOST_LOG_SEV(lg, info) << "load mnist train size "
+            << mnist[0].size().value() << ", test size "
+            << mnist[1].size().value();
 
         auto train_data = mnist[0].map(tt::Normalize<>(0.13707, 0.3081))
             .map(tt::Stack<>());
@@ -59,13 +56,14 @@ int main(int argc, char* argv[]) {
             torch::optim::SGDOptions(0.01).momentum(0.5));
 
         // train and test
+        BOOST_LOG_SEV(lg, info) << "Start train DNN";
         size_t start_epoch = 0, num_epochs = 10;
         for (size_t epoch = start_epoch; epoch < num_epochs; ++epoch) {
             train(epoch, model, optimizer, train_data_loader);
             test(model, test_data_loader, test_data_size);
         }
     } catch (const std::exception& e) {
-        cerr << e.what() << endl;
+        BOOST_LOG_SEV(lg, error)<< e.what();
         return 1;
     }
 }
