@@ -60,3 +60,29 @@ class Test3(object):
     def test2(self):
         print('test 3-2')
 
+@pytest.fixture()
+def demo_c(request):
+    return request.param
+
+@pytest.fixture()
+def demo_d(request):
+    return request.param
+
+@pytest.mark.parametrize('demo_c', [1, 2], indirect=True)
+@pytest.mark.parametrize('demo_d', [3, 4], indirect=True)
+class Test4(object):
+    '''
+    fixture with multiple params, demo4 run 4 times, will generate 8 cases
+    demo4 with capfd, capfd is function scope
+    '''
+    @pytest.fixture(autouse=True)
+    def demo4(self, capfd, demo_c, demo_d):
+        print('fixture demo3', demo_a, demo_b)
+        capfd.readouterr()
+
+    def test1(self):
+        print('test 4-1')
+
+
+    def test2(self):
+        print('test 4-2')
