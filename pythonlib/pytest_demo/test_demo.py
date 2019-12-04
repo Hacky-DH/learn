@@ -72,17 +72,18 @@ def demo_d(request):
 @pytest.mark.parametrize('demo_d', [3, 4], indirect=True)
 class Test4(object):
     '''
-    fixture with multiple params, demo4 run 4 times, will generate 8 cases
-    demo4 with capfd, capfd is function scope
+    fixture with multiple params, demo4 run 8 times, will generate 8 cases
+    use with class scope fixture will raise ScopeMismatch error
+    due to capfd is function scope
+    use `pytest --capture=fd` instead
     '''
     @pytest.fixture(autouse=True)
     def demo4(self, capfd, demo_c, demo_d):
-        print('fixture demo3', demo_a, demo_b)
+        print('fixture demo3', demo_c, demo_d)
         capfd.readouterr()
 
     def test1(self):
         print('test 4-1')
-
 
     def test2(self):
         print('test 4-2')
