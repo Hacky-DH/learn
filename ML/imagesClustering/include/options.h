@@ -26,7 +26,12 @@ public:
 
     std::string data_config();
     std::string data_root();
-    int batch_size();
+    std::string model_dir();
+    size_t batch_size();
+    size_t log_per_steps();
+    size_t checkpoint_per_epoch();
+    size_t start_epoch();
+    size_t num_epochs();
 
     void parse(int argc, char* argv[]);
 private:

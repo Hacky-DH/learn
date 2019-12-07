@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
 
         auto train_data = mnist[0].map(tt::Normalize<>(0.13707, 0.3081))
             .map(tt::Stack<>());
-        int batch_size = options.batch_size();
+        auto batch_size = options.batch_size();
         auto train_data_loader = torch::data::make_data_loader(
             std::move(train_data), batch_size);
 
@@ -57,9 +57,12 @@ int main(int argc, char* argv[]) {
 
         // train and test
         BOOST_LOG_SEV(lg, info) << "Start train DNN";
-        size_t start_epoch = 0, num_epochs = 10;
+        size_t start_epoch = options.start_epoch(),
+            num_epochs = options.num_epochs();
         for (size_t epoch = start_epoch; epoch < num_epochs; ++epoch) {
-            train(epoch, model, optimizer, train_data_loader);
+            train(epoch, model, optimizer, train_data_loader,
+                options.log_per_steps(),options.checkpoint_per_epoch(),
+                options.model_dir());
             test(model, test_data_loader, test_data_size);
         }
     } catch (const std::exception& e) {
