@@ -56,12 +56,12 @@ int main(int argc, char* argv[]) {
             torch::optim::SGDOptions(0.01).momentum(0.5));
 
         // train and test
-        BOOST_LOG_SEV(lg, info) << "Start train DNN";
+        BOOST_LOG_SEV(lg, info) << "Start train " << model->name();
         size_t start_epoch = options.start_epoch(),
             num_epochs = options.num_epochs();
         for (size_t epoch = start_epoch; epoch < num_epochs; ++epoch) {
             train(epoch, model, optimizer, train_data_loader,
-                options.log_per_steps(),options.checkpoint_per_epoch(),
+                options.log_per_steps(), options.checkpoint_per_epoch(),
                 options.model_dir());
             test(model, test_data_loader, test_data_size);
         }

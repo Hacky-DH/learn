@@ -5,7 +5,8 @@ namespace nn = torch::nn;
 
 
 DNN::DNN(size_t input_size, size_t num_classes,
-    size_t h1, size_t h2) :input_size(input_size) {
+    size_t h1, size_t h2) : nn::Module("Deep neural network"),
+    input_size(input_size) {
     // Construct and register two Linear submodules.
     fc1 = register_module("fc1", torch::nn::Linear(input_size, h1));
     fc2 = register_module("fc2", torch::nn::Linear(h1, h2));
