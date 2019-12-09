@@ -1,6 +1,4 @@
 #pragma once
-#include <iostream>
-#include <boost/filesystem.hpp>
 #include "utils.h"
 #include "log.h"
 
@@ -14,9 +12,7 @@ void train(
     Module model,
     torch::optim::Optimizer &optimizer,
     DataLoader &data_loader,
-    size_t log_per_steps = 100,
-    size_t checkpoint_per_epoch = 5,
-    std::string model_dir = "model") {
+    size_t log_per_steps = 100) {
     auto &lg = log::ic_logger::get();
     model->train();
     size_t step = 0;
@@ -31,11 +27,6 @@ void train(
             BOOST_LOG_SEV(lg, info) << "Epoch: [" << epoch + 1 << "] Batch: ["
                 << step << "] Loss: " << loss.item<float>();
         }
-    }
-    if ((epoch + 1) % checkpoint_per_epoch == 0) {
-        fs::create_directory(model_dir);
-        fs::path file = fs::path(model_dir) / "checkpoint.pt";
-        torch::save(model, file.string());
     }
 }
 

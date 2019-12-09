@@ -58,12 +58,18 @@ int main(int argc, char* argv[]) {
         // train and test
         BOOST_LOG_SEV(lg, info) << "Start train " << model->name();
         size_t start_epoch = options.start_epoch(),
-            num_epochs = options.num_epochs();
+            num_epochs = options.num_epochs(),
+            checkpoint_per_epoch = options.checkpoint_per_epoch();
+        std::string model_dir = options.model_dir();
+        fs::create_directory(model_dir);
         for (size_t epoch = start_epoch; epoch < num_epochs; ++epoch) {
             train(epoch, model, optimizer, train_data_loader,
-                options.log_per_steps(), options.checkpoint_per_epoch(),
-                options.model_dir());
+                options.log_per_steps());
             test(model, test_data_loader, test_data_size);
+            if ((epoch + 1) % checkpoint_per_epoch == 0) {
+                fs::path file = fs::path(model_dir) / "checkpoint.pt";
+                torch::save(model, file.string());
+            }
         }
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg, error)<< e.what();
