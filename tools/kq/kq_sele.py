@@ -59,8 +59,8 @@ def kq(**kwargs):
         ck.click()
         random_delay()
         return 'done'
-    except:
-        return 'failed'
+    except Exception as e:
+        return 'failed, reason: {}'.format(e)
     finally:
         if driver:
             driver.quit()
