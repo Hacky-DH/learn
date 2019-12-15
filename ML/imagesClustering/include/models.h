@@ -38,5 +38,25 @@ struct DCN : BaseModel {
     nn::Linear fc2;
 };
 
+// VGG-16 Visual Geometry Group
+// small kernel size 3x3 and deep layers
+// conv1_1 - conv1_2 - pool 1 -
+// conv2_1 - conv2_2 - pool 2 -
+// conv3_1 - conv3_2 - conv3_3 - pool 3 -
+// conv4_1 - conv4_2 - conv4_3 - pool 4 -
+// conv5_1 - conv5_2 - conv5_3 - pool 5 -
+// fc6 - fc7 - fc8
+struct VGG : BaseModel {
+    VGG();
+    torch::Tensor forward(torch::Tensor x);
+
+    nn::Conv2d conv1_1{nullptr}, conv1_2{nullptr};
+    nn::Conv2d conv2_1{nullptr}, conv2_2{nullptr};
+    nn::Conv2d conv3_1{nullptr}, conv3_2{nullptr}, conv3_3{nullptr};
+    nn::Conv2d conv4_1{nullptr}, conv4_2{nullptr}, conv4_3{nullptr};
+    nn::Conv2d conv5_1{nullptr}, conv5_2{nullptr}, conv5_3{nullptr};
+    nn::Linear fc1{nullptr}, fc2{nullptr}, fc3{nullptr};
+};
+
 std::shared_ptr<BaseModel> get_model(const std::string& model);
 }

@@ -7,6 +7,7 @@ add_executable(${PROJECT_NAME}
   models/fnn.cpp
   models/dcn.cpp
   models/dnn.cpp
+  models/vgg.cpp
 )
 
 set(libs ${TORCH_LIBRARIES} ${OpenCV_LIBS})

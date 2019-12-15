@@ -5,8 +5,8 @@ namespace nn = torch::nn;
 
 // DCN deep conv network
 DCN::DCN(): BaseModel("Deep convolution network"),
-    conv1(torch::nn::Conv2dOptions(1, 10, /*kernel_size=*/5)),
-    conv2(torch::nn::Conv2dOptions(10, 20, /*kernel_size=*/5)),
+    conv1(nn::Conv2dOptions(1, 10, /*kernel_size=*/5)),
+    conv2(nn::Conv2dOptions(10, 20, /*kernel_size=*/5)),
     fc1(320, 50),
     fc2(50, 10) {
     register_module("conv1", conv1);
