@@ -1,7 +1,6 @@
 #include "models.h"
 
 namespace ic {
-namespace nn = torch::nn;
 
 // DCN deep conv network
 DCN::DCN(): BaseModel("Deep convolution network"),

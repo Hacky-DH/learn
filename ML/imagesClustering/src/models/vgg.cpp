@@ -1,7 +1,6 @@
 #include "models.h"
 
 namespace ic {
-namespace nn = torch::nn;
 
 // VGG-16 Visual Geometry Group
 VGG::VGG() : BaseModel("VGG-16 network"),

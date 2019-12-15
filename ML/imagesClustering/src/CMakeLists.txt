@@ -4,10 +4,12 @@ add_executable(${PROJECT_NAME}
   dataset.cpp
   options.cpp
   log.cpp
+  models/models.cpp
   models/fnn.cpp
   models/dcn.cpp
   models/dnn.cpp
   models/vgg.cpp
+  models/rnn.cpp
 )
 
 set(libs ${TORCH_LIBRARIES} ${OpenCV_LIBS})

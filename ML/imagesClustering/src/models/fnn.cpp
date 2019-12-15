@@ -2,20 +2,6 @@
 
 namespace ic {
 
-std::shared_ptr<BaseModel> get_model(const std::string& model) {
-    if (model == "fnn") {
-        return std::make_shared<FNN>();
-    } else if (model == "dnn") {
-        return std::make_shared<DNN>();
-    } else if (model == "dcn") {
-        return std::make_shared<DCN>();
-    } else if (model == "vgg") {
-        return std::make_shared<VGG>();
-    } else {
-        throw std::runtime_error("unexpected model");
-    }
-}
-
 // Feedforward Neural Network
 FNN::FNN(size_t input_size, size_t hidden_size,
     size_t num_classes):

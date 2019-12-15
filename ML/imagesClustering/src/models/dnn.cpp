@@ -1,8 +1,6 @@
 #include "models.h"
 
 namespace ic {
-namespace nn = torch::nn;
-
 
 DNN::DNN(size_t input_size, size_t num_classes,
     size_t h1, size_t h2) : BaseModel("Deep neural network"),
