@@ -27,6 +27,7 @@ public:
     std::string data_config();
     std::string data_root();
     std::string model_dir();
+    std::string model();
     size_t batch_size();
     size_t log_per_steps();
     size_t checkpoint_per_epoch();

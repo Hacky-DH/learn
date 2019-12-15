@@ -37,6 +37,9 @@ Options::Options() :_options("Options") {
     _options.add_options()
         ("num-epochs", po::value<size_t>()->
             default_value(10), "num epochs");
+    _options.add_options()
+        ("model", po::value<std::string>()->
+            default_value("dcn"), "model");
 }
 
 std::string Options::data_config() {
@@ -72,6 +75,10 @@ size_t Options::start_epoch() {
 
 size_t Options::num_epochs() {
     return _results["num-epochs"].as<size_t>();
+}
+
+std::string Options::model() {
+    return _results["model"].as<std::string>();
 }
 
 void Options::parse(int argc, char* argv[]) {

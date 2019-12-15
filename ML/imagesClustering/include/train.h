@@ -43,6 +43,7 @@ void test(
     for (const auto& batch : *data_loader) {
         auto output = model->forward(batch.data);
         // no at::Reduction::Sum?
+        // binary_cross_entropy
         test_loss += torch::nll_loss(output, batch.target,
             /*weight=*/{}, /*reduction=sum*/2)
             .template item<float>();

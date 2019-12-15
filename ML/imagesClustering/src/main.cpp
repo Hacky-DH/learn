@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
         auto test_data_loader = torch::data::make_data_loader(
                 std::move(test_data), 1024);
 
-        auto model = std::make_shared<DNN>();
+        auto model = get_model(options.model());
         torch::optim::SGD optimizer(model->parameters(),
             torch::optim::SGDOptions(0.01).momentum(0.5));
 

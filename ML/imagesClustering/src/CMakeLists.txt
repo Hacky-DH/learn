@@ -4,7 +4,7 @@ add_executable(${PROJECT_NAME}
   dataset.cpp
   options.cpp
   log.cpp
-  models/cnn.cpp
+  models/fnn.cpp
   models/dcn.cpp
   models/dnn.cpp
 )
