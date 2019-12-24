@@ -13,6 +13,7 @@ void redirect1() {
     dup2(devnull, STDOUT_FILENO);
     std::cout<<"stdout to dev null"<<std::endl;
     std::cerr<<"stderr is ok"<<std::endl;
+    // restore
     dup2(oldout, STDOUT_FILENO);
     std::cout<<"stdout is ok again"<<std::endl;
 }
@@ -24,8 +25,9 @@ void redirect2() {
     freopen("/dev/null", "w", stdout);
     std::cout<<"stdout to dev null"<<std::endl;
     std::cerr<<"stderr is ok"<<std::endl;
+    // restore
     fclose(stdout);
-    stdout = fdopen(0, "w");
+    stdout = fdopen(STDOUT_FILENO, "w");
     std::cout<<"stdout is ok again"<<std::endl;
 }
 
