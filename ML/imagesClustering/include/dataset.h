@@ -3,6 +3,7 @@
 #include <vector>
 #include <list>
 
+#include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 
@@ -15,6 +16,8 @@
 namespace ic {
 namespace fs = boost::filesystem;
 namespace td = torch::data::datasets;
+
+//https://krshrimali.github.io/Custom-Data-Loading-Using-PyTorch-CPP-API/
 
 void display_image(const std::string& path);
 

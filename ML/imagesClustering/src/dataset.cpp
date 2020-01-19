@@ -2,6 +2,18 @@
 
 namespace ic {
 
+//Convert and Load image to tensor
+torch::Tensor read_image_data(std::string loction) {
+    cv::Mat img = cv::imread(loction);
+    cv::resize(img, img, cv::Size(1920, 1080), cv::INTER_CUBIC);
+    std::cout << "Sizes: " << img.size() << std::endl;
+    torch::Tensor img_tensor = torch::from_blob(img.data,
+        {img.rows, img.cols, 3}, torch::kByte);
+    // Channels x Height x Width
+    img_tensor = img_tensor.permute({2, 0, 1});
+    return img_tensor.contiguous();
+}
+
 void display_image(const std::string& path) {
     cv::Mat image = cv::imread(path);
     if (image.empty()) {
