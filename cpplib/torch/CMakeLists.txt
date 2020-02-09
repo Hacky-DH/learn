@@ -14,6 +14,7 @@ set(learn learn)
 add_executable(${learn} learn.cpp)
 set(demo demo)
 add_executable(${demo} demo.cpp)
+add_executable(dataset dataset.cpp)
 
 if(MYTORCH)
 	# search for torch
@@ -29,6 +30,7 @@ else()
 	find_package(Torch REQUIRED)
 	target_link_libraries(${learn} ${TORCH_LIBRARIES})
 	target_link_libraries(${demo} ${TORCH_LIBRARIES})
+	target_link_libraries(dataset ${TORCH_LIBRARIES})
 endif(MYTORCH)
 
 if(MSVC)
