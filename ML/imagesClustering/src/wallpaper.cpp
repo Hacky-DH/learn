@@ -104,6 +104,7 @@ void test_wallpaper(const std::string& path) {
 }
 
 // example: set_style_or_round(argc > 1 ? argv[1] : "8");
+// #pragma comment(linker, "/subsystem:windows /entry:mainCRTStartup")
 void set_style_or_round(const std::string& style) {
     uint32_t s = style[0] - '0';
     WallPaper p;
