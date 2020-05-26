@@ -9,11 +9,12 @@ import signal
 import time
 import queue
 import json
+import traceback
 
 
 # _ProcessStatusInfo contains process status information
 _ProcessStatusInfo = collections.namedtuple('_ProcessStatusInfo',
-        ['is_successful', 'exc_info'])
+        ['is_successful'])
 _SubprocessInfo = collections.namedtuple('_SubprocessInfo', ['pid'])
 
 _DEFAULT_TIMEOUT_SEC = 200
@@ -69,9 +70,10 @@ class MultiProcessRunner(object):
         self.streaming_queue = self.ctx.Queue()
 
     def start(self):
+        has_chief = 'chief' in self.cluster_spec
         for task_type, addresses in self.cluster_spec.items():
             for task_id, _ in enumerate(addresses):
-                self._start_subprocess(task_type, task_id)
+                self._start_subprocess(task_type, task_id, has_chief)
 
         if self.max_run_time_sec is not None:
             def handler(signum, frame):
@@ -97,15 +99,18 @@ class MultiProcessRunner(object):
                         self.terminate_all(signal.SIGTERM)
                         raise RuntimeError(
                                 'One or more subprocesses timed out, '
-                                '{self.outstanding_subprocess_count}')
+                                f'{self.outstanding_subprocess_count}')
             if self.all_forced_terminated:
                 break
             self.outstanding_subprocess_count -= 1
             assert isinstance(ps, _ProcessStatusInfo)
             if not ps.is_successful:
-                ei = ps.exc_info
-                raise ei[0].with_traceback(ei[1], ei[2])
-        time.sleep(1)
+                # wait other subprocesses fail
+                time.sleep(3)
+                self.terminate_all(signal.SIGTERM)
+                raise RuntimeError(f'{ps.task_type}-{ps.task_id} '
+                        'raise an error')
+        time.sleep(3)
         # read all the stream queue
         ret_list = []
         while True:
@@ -113,12 +118,17 @@ class MultiProcessRunner(object):
                 ret_list.append(self.streaming_queue.get(False))
             except queue.Empty:
                 break
-        # terminate threads
-        for pp in self.terminate_thread_pipes:
-            writer = os.fdopen(pp.fileno(), 'w')
-            writer.writelines(['EOF'])
-            pp.close()
+        self.terminate_threads()
         return ret_list
+
+    def terminate_threads(self):
+        for pp in self.terminate_thread_pipes:
+            try:
+                writer = os.fdopen(pp.fileno(), 'w')
+                writer.writelines(['EOF'])
+                pp.close()
+            except:
+                pass
 
     def terminate_all(self, sig=None):
         sig = sig or getattr(signal, 'SIGKILL', signal.SIGTERM)
@@ -130,17 +140,18 @@ class MultiProcessRunner(object):
             except queue.Empty:
                 break
 
+        self.terminate_threads()
         for si in subprocess_infos:
             print(f'kill child process {si.pid}')
             os.kill(si.pid, sig)
         self.all_forced_terminated = True
 
-    def _start_subprocess(self, task_type, task_id):
+    def _start_subprocess(self, task_type, task_id, has_chief):
         # use pipe to collect std stream
         pipe_r, pipe_w = self.ctx.Pipe(False) # unidirectional pipe
         self.terminate_thread_pipes.append(pipe_w)
         p = self.ctx.Process(target=self._process_target,
-                args=(pipe_w, task_type, task_id))
+                args=(pipe_w, task_type, task_id, has_chief))
         p.start()
         self.outstanding_subprocess_count += 1
 
@@ -163,7 +174,7 @@ class MultiProcessRunner(object):
             if self.list_stdout:
                 self.streaming_queue.put(formatted_line)
 
-    def _process_target(self, pipe_w, task_type, task_id):
+    def _process_target(self, pipe_w, task_type, task_id, has_chief):
         faulthandler.enable()
         faulthandler.register(signal.SIGTERM, chain=True)
         pid = os.getpid()
@@ -175,22 +186,21 @@ class MultiProcessRunner(object):
         tf_config = {'cluster': self.cluster_spec,
                 'task': {'type': task_type, 'index': task_id}}
         os.environ['TF_CONFIG'] = json.dumps(tf_config)
-        if 'worker' == task_type:
-            gpus = self.gpu_devices or task_id
+        if 'ps' == task_type:
+            os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+        else:
+            tid = task_id + 1 if has_chief and task_type=='worker' else task_id
+            gpus = self.gpu_devices or tid
             os.environ['CUDA_VISIBLE_DEVICES'] = str(gpus)
         try:
             self.proc_func(*self.args, **self.kwargs) # ignore return
             is_successful = True
-            exc_info = None
         except:
             is_successful = False
-            exc_info = sys.exc_info()
-            raise
         finally:
             signal.alarm(0)
             self.process_status_queue.put(_ProcessStatusInfo(
-                is_successful=is_successful,
-                exc_info=exc_info))
+                is_successful=is_successful))
 
 def run(proc_func,
         cluster_spec,
