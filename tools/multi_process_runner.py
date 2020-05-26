@@ -197,6 +197,7 @@ class MultiProcessRunner(object):
             is_successful = True
         except:
             is_successful = False
+            traceback.print_exc()
         finally:
             signal.alarm(0)
             self.process_status_queue.put(_ProcessStatusInfo(
