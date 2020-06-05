@@ -10,6 +10,7 @@ from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.common.keys import Keys
 
 FORMAT = '%Y-%m-%d %H:%M:%S'
+DAY_FORMAT = '%Y%m%d'
 MAX_RETRY = 5
 
 def random_delay(a=5, b=10):
@@ -133,6 +134,16 @@ def schedule(**kwargs):
     return _schedule(now, dt, **kwargs)
 
 
+def is_holiday(now, exclude_weekdays, workdays_holidays=None):
+    day = 'd' + now.strftime(DAY_FORMAT)
+    if day in workdays_holidays:
+        if workdays_holidays[day] == 'h':
+            return True
+        if workdays_holidays[day] == 'w':
+            return False
+    return now.weekday() in exclude_weekdays
+
+
 def parse_config(config_file):
     with open(config_file, 'r') as f:
         return yaml.safe_load(f)
@@ -153,9 +164,11 @@ def main(config_file):
         logging.info('mode: forever')
         while True:
             now = datetime.now()
-            exclude_weekdays = options.pop('exclude_weekdays', [5, 6])
-            if now.weekday() in exclude_weekdays:
-                logging.warning('NOT run at week day {}'.format(now.weekday()+1))
+            exclude_weekdays = options.get('exclude_weekdays', [5, 6])
+            workdays_holidays = options.get('workdays_holidays')
+            if is_holiday(now, exclude_weekdays, workdays_holidays):
+                logging.warning('NOT run at day {}'.format(
+                    now.strftime(DAY_FORMAT)))
                 delay_to_next_day()
                 continue
             options.update(options.get('start', {}))
