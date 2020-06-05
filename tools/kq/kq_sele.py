@@ -10,6 +10,7 @@ from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.common.keys import Keys
 
 FORMAT = '%Y-%m-%d %H:%M:%S'
+MAX_RETRY = 5
 
 def random_delay(a=5, b=10):
     time.sleep(int(random.uniform(a, b)))
@@ -96,7 +97,15 @@ def _schedule(now, dt, **kwargs):
     tm = dt.strftime(FORMAT)
 
     def _run():
-        res = kq(**kwargs)
+        try_times=0
+        while try_times < MAX_RETRY:
+            res = kq(**kwargs)
+            if res == 'done':
+                break
+            try_times += 1
+            logging.info('run at {} {}, retry #{}'.format(
+                tm, res, try_times))
+            random_delay()
         logging.info('run at {} {}'.format(tm, res))
 
     if dt > now:
