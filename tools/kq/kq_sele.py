@@ -34,6 +34,8 @@ def kq(**kwargs):
     """
     option = ChromeOptions()
     option.add_experimental_option('excludeSwitches', ['enable-automation'])
+    option.add_argument('--headless')
+    option.add_argument('--disable-gpu')
     # need download chromedriver and put to PATH
     # http://chromedriver.chromium.org/downloads
     # http://chromedriver.storage.googleapis.com/index.html
