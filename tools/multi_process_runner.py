@@ -9,8 +9,7 @@ import signal
 import sys
 import threading
 import time
-
-import six
+import traceback
 
 # _ProcessStatusInfo contains process status information. When is_successful
 # attribute is True, the subprocess has ended successfully, or if False, the
@@ -278,10 +277,7 @@ class MultiProcessRunner(object):
           task_type='evaluator',
           task_id=0)
 
-    mpr = multi_process_runner.MultiProcessRunner(
-        fn,
-        multi_worker_test_base.create_cluster_spec(
-            has_chief=True, num_workers=1))
+    mpr = multi_process_runner.MultiProcessRunner(fn,cluster_spec)
     threading.Thread(target=follow_ups).start()
     mpr.start_in_process_as(as_task_type='chief', as_task_id=0)
     mpr.join()
@@ -460,9 +456,7 @@ class MultiProcessRunner(object):
         for process_status in process_statuses.values():
             assert isinstance(process_status, _ProcessStatusInfo)
             if not process_status.is_successful:
-                process_status.exc_info[1].mpr_result = self._get_mpr_result(
-                    process_statuses)
-                six.reraise(*process_status.exc_info)
+                raise RuntimeError(process_status.exc_info)
 
     def join(self, timeout=_DEFAULT_TIMEOUT_SEC):
         """Joins all the processes with timeout.
@@ -742,7 +736,7 @@ class _ProcFunc(object):
         # timeout. Raising an error in the subprocess produces stack trace in
         # the log, but the program continues running.
         if not info.is_successful:
-            six.reraise(*info.exc_info)
+            raise RuntimeError(info.exc_info)
 
         self._close_streaming()
 
@@ -781,12 +775,12 @@ def _run_contained(task_type, task_id, fn, args, kwargs):
 
     # If `fn` ends up exiting with `sys.exit()`, the `SystemExit` is not
     # handled here.
-    except Exception:  # pylint: disable=broad-except
-        exc_info = sys.exc_info()
+    except Exception as e:  # pylint: disable=broad-except
+        traceback.print_exc()
         return _ProcessStatusInfo(task_type=task_type,
                                   task_id=task_id,
                                   is_successful=is_successful,
-                                  exc_info=exc_info,
+                                  exc_info=str(e),
                                   return_value=return_value)
 
 
