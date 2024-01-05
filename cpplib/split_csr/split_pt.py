@@ -10,21 +10,19 @@ def splitCSR(indptr, indices, split_sizes):
         col_start = 0
         for cs in split_sizes:
             indptr_tensor = torch.tensor(indptr[row_start:row_start + rs + 1])
-            # 计算当前块的列范围
             row_index = torch.arange(row_start, row_start + rs)
             row_indices = row_index.repeat_interleave(indptr_tensor[1:] -
                                                       indptr_tensor[:-1])
             col_indices = indices_tensor[indptr_tensor[0]:indptr_tensor[-1]]
-            # 选择当前块的行列索引
             mask = (col_indices >= col_start) & (col_indices < col_start + cs)
             row_indices = row_indices[mask] - row_start
             col_indices = col_indices[mask] - col_start
             # 计算row_indices
-            _, row_counts = torch.unique(row_indices, return_counts=True)
-            row_cum_sum = torch.cumsum(row_counts, dim=0)
-            pre_zero = torch.zeros(rs - row_cum_sum.numel() + 1,
-                                   dtype=row_cum_sum.dtype)
-            row_indices = torch.cat([pre_zero, row_cum_sum])
+            ones = torch.ones_like(row_indices)
+            out_row_indices = torch.zeros(row_end - row_start + 1,
+                                          dtype=row_indices.dtype)
+            out_row_indices.scatter_add_(0, row_indices + 1, ones)
+            row_indices = torch.cumsum(out_row_indices, dim=0)
             sub_matrix = {'indptr': row_indices, 'indices': col_indices}
             result.append(sub_matrix)
             col_start += cs
