@@ -1,0 +1,38 @@
+# GRL 编排示例
+# 包含两个图
+graph1 {
+  version = "1.0.0"
+  description=""
+  start = builtin.node1
+  end = node2
+  a, b <- builtin.node1 {
+    version='1.1.0'
+    description="node1 description"
+    attr1="demo attr示例属性"
+    attr2=23.8
+    attr3=true
+  }
+  c <- node2 {
+    input= a,b
+    version="1.2.0"
+    attr1=2024-12-02T10:32:00Z
+    attr2=87
+  }
+}
+graph2 {
+  version="1.0.0"
+  a <- node1 {
+    version="1.2.0"
+    attr1="demo"
+  }
+  b,c,d <- package.node2 {
+    input = a
+    version="1.2.3"
+    attr1=34
+  }
+  e <- node3 {
+    input= b,c,d
+    version="1.2.1"
+    attr1=2024-12-02T22:45:38Z
+  }
+}

@@ -1,0 +1,19 @@
+# RAG实现带环图
+graph {
+  version = "1.0.0"
+  description = "aigc demo graph"
+  start = builtin.chatbot
+  messages <- builtin.chatbot {
+    input = tool_result
+    version="1.0.0"
+    description="chat with ai"
+    model="gpt4o"
+  }
+  tool_result <- builtin.tools {
+    input = messages
+    version=""
+    tools="builtin.get_weather"
+    condition='builtin.tool_condition'
+    attr=100
+  }
+}
