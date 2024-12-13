@@ -3,13 +3,15 @@ graph {
   version = "1.0.0"
   description = "aigc demo graph"
   start = builtin.chatbot
-  messages <- builtin.chatbot {
+  messages = node {
+    id = "builtin.chatbot"
     input = tool_result
     version="1.0.0"
     description="chat with ai"
     model="gpt4o"
   }
-  tool_result <- builtin.tools {
+  tool_result = node {
+    id = "builtin.tools"
     input = messages
     version=""
     tools="builtin.get_weather"
